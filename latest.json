@@ -1,16 +1,16 @@
 {
   "app": "syntax-academy",
-  "version": "1.2.0",
-  "file": "SyntaxAcademy-1.2.0.html",
-  "sha256": "ae85ed761f75596a64e306179f3a2e3d2d860b3cbce2cf7fdf9a116290a2668b",
-  "size": 2245041,
-  "core": "core-1.2.0.py",
+  "version": "1.3.0",
+  "file": "SyntaxAcademy-1.3.0.html",
+  "sha256": "f9bb852026365e254820b18e539a4048bd32e7c3c6a7d22ba0a63bf6914c2649",
+  "size": 2294539,
+  "core": "core-1.3.0.py",
   "core_sha256": "58123f211adeda1b5986272a64d5939032e34fbcc9616efc478734d8e62a270e",
   "core_size": 50382,
   "date": "2026-10-17",
   "notes": [
-    "The Workshop: algorithm visualizer, regex lab, git simulator, Rosetta Stone, code puzzles and a focus timer",
-    "Spooky Season event with candy, event outfits, goals and a daily hidden pumpkin",
-    "Two new arcade games, 6 new quests and 18 new badges"
+    "Data Structures Lab: live stack, queue, linked list, binary search tree and hash table with 19 missions",
+    "Bits & Bytes Lab: flip bits, target practice, bitwise operators, UTF-8 bytes and base conversion",
+    "New arcade game Binary Blitz, 2 new quests, 5 new badges"
   ]
 }
