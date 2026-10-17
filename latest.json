@@ -1,17 +1,16 @@
 {
   "app": "syntax-academy",
-  "version": "1.1.0",
-  "file": "SyntaxAcademy-1.1.0.html",
-  "sha256": "a13e148fa8e5a4a512ee23da25f7606f7d8a4f0478aac4b96138897f3ca11d08",
-  "size": 2070144,
-  "core": "core-1.1.0.py",
+  "version": "1.1.1",
+  "file": "SyntaxAcademy-1.1.1.html",
+  "sha256": "ef437668f3fb9decc70ce7fcd001f94f3ddb1540ac63e6569c4ea2317a8412ca",
+  "size": 2070642,
+  "core": "core-1.1.1.py",
   "core_sha256": "9fa1db1a949d94339e5c96c0e12626d0cbf9533b8fe0a7b50c80d1da74d19670",
   "core_size": 48257,
   "date": "2026-10-17",
   "notes": [
-    "47 languages, including new Zig, Nim, Crystal, D, Fortran, Pascal, Ada, Assembly, Odin, Groovy, Octave, COBOL and Prolog courses",
-    "Bits, daily quests and the Bubble Bazaar shop: dress up Byte, avatar frames, editor themes, celebration effects",
-    "Study Hall: flashcards, glossary, cheat sheets, notes and bookmarks",
-    "Predict-the-output in lessons, Trophy Room, stats, certificates and 27 new badges"
+    "Friends, duels, leagues, activity feed and cloud saves are switched on",
+    "Fixed: a duel result could disappear if your window was in the background",
+    "Fixed: losing a duel no longer pays the winner's bits"
   ]
 }
