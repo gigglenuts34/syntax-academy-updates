@@ -1,16 +1,15 @@
 {
   "app": "syntax-academy",
-  "version": "1.1.1",
-  "file": "SyntaxAcademy-1.1.1.html",
-  "sha256": "ef437668f3fb9decc70ce7fcd001f94f3ddb1540ac63e6569c4ea2317a8412ca",
-  "size": 2070642,
-  "core": "core-1.1.1.py",
-  "core_sha256": "9fa1db1a949d94339e5c96c0e12626d0cbf9533b8fe0a7b50c80d1da74d19670",
-  "core_size": 48257,
+  "version": "1.1.2",
+  "file": "SyntaxAcademy-1.1.2.html",
+  "sha256": "b3bde5e07c250d68c8c0bc4a332ed076e932bc7f9d806a4585b3ca7ed429a379",
+  "size": 2071652,
+  "core": "core-1.1.2.py",
+  "core_sha256": "58123f211adeda1b5986272a64d5939032e34fbcc9616efc478734d8e62a270e",
+  "core_size": 50382,
   "date": "2026-10-17",
   "notes": [
-    "Friends, duels, leagues, activity feed and cloud saves are switched on",
-    "Fixed: a duel result could disappear if your window was in the background",
-    "Fixed: losing a duel no longer pays the winner's bits"
+    "Fixed the white window on some graphics cards (too many blurred glass layers)",
+    "If drawing freezes anyway, the app restarts in safe graphics by itself"
   ]
 }

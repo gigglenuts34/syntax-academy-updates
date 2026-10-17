@@ -71,7 +71,7 @@
   --blur: 18px;
 
   --text: #0b2a47; --text-2: #1d4468; --muted: #4f6f8f; --faint: #7d98b3;
-  --glass: rgba(255, 255, 255, .5); --glass-strong: rgba(255, 255, 255, .74); --glass-weak: rgba(255, 255, 255, .28); --glass-solid: rgba(246, 251, 255, .94);
+  --glass: rgba(255, 255, 255, .5); --glass-frost: rgba(255, 255, 255, .64); --glass-strong: rgba(255, 255, 255, .74); --glass-weak: rgba(255, 255, 255, .28); --glass-solid: rgba(246, 251, 255, .94);
   --glass-border: rgba(255, 255, 255, .9); --glass-edge: rgba(30, 90, 150, .16);
   --gloss: linear-gradient(180deg, rgba(255, 255, 255, .62) 0%, rgba(255, 255, 255, .16) 42%, rgba(255, 255, 255, 0) 60%);
   --shadow: 0 10px 34px rgba(12, 62, 112, .18), 0 2px 6px rgba(12, 62, 112, .08);
@@ -85,7 +85,7 @@
 }
 :root[data-theme="dark"] {
   --text: #e6f5ff; --text-2: #c4e2fa; --muted: #93b3cf; --faint: #6d8aa6;
-  --glass: rgba(8, 26, 52, .5); --glass-strong: rgba(8, 26, 52, .76); --glass-weak: rgba(8, 26, 52, .3); --glass-solid: rgba(9, 27, 52, .95);
+  --glass: rgba(8, 26, 52, .5); --glass-frost: rgba(8, 26, 52, .68); --glass-strong: rgba(8, 26, 52, .76); --glass-weak: rgba(8, 26, 52, .3); --glass-solid: rgba(9, 27, 52, .95);
   --glass-border: rgba(130, 215, 255, .26); --glass-edge: rgba(120, 210, 255, .14);
   --gloss: linear-gradient(180deg, rgba(160, 225, 255, .16) 0%, rgba(160, 225, 255, .04) 40%, rgba(160, 225, 255, 0) 60%);
   --shadow: 0 10px 34px rgba(0, 0, 0, .42), 0 0 0 1px rgba(110, 200, 255, .05);
@@ -154,6 +154,11 @@ input, select, textarea { font: inherit; color: inherit; }
   -webkit-backdrop-filter: blur(var(--blur)) saturate(165%); backdrop-filter: blur(var(--blur)) saturate(165%);
 }
 :root[data-glass="flat"] .glass, :root[data-glass="flat"] .glass-card, :root[data-glass="flat"] .glass-pill, :root[data-glass="flat"] .modal { -webkit-backdrop-filter: none; backdrop-filter: none; }
+/* Live blur only on a few big surfaces. WebKit stops drawing on some GPUs (e.g. Intel HD 520) once
+   ~14 blurred layers stack up, and a busy page has dozens of cards, chips and buttons. Those get a
+   denser frosted fill instead, which looks almost the same over the sky. */
+.glass-card, .glass-pill:not(.search-pill), .glass:not(.sidebar):not(.modal):not(.tutor) { -webkit-backdrop-filter: none; backdrop-filter: none; }
+:root:not([data-glass="flat"]) :is(.glass-card, .glass-pill:not(.search-pill), .glass:not(.sidebar):not(.modal):not(.tutor), .icon-btn) { --glass: var(--glass-frost); }
 .glass-card { border-radius: var(--r); padding: 18px 20px; position: relative; }
 .glass-pill { border-radius: 999px; }
 .glass-inset { background: var(--glass-weak); border: 1px solid var(--glass-edge); border-radius: var(--r-sm); }
@@ -180,7 +185,7 @@ a.glass-card:hover::after, button.glass-card:hover::after { transform: translate
 .btn.ghost:hover { background: var(--glass-weak); border-color: var(--glass-edge); }
 .btn.sm { padding: .4em .85em; font-size: .85rem; } .btn.lg { padding: .75em 1.6em; font-size: 1.05rem; }
 .btn .ic { width: 1.05em; height: 1.05em; }
-.icon-btn { width: 40px; height: 40px; display: grid; place-items: center; border-radius: 50%; border: 1px solid var(--glass-border); background: var(--gloss), var(--glass); box-shadow: var(--shadow), var(--inner); -webkit-backdrop-filter: blur(var(--blur)); backdrop-filter: blur(var(--blur)); }
+.icon-btn { width: 40px; height: 40px; display: grid; place-items: center; border-radius: 50%; border: 1px solid var(--glass-border); background: var(--gloss), var(--glass); box-shadow: var(--shadow), var(--inner); }
 .icon-btn:hover { filter: brightness(1.08); }
 .mini-btn { display: inline-flex; align-items: center; gap: 5px; padding: 4px 10px; border-radius: 999px; border: 1px solid rgba(140, 210, 255, .3); background: linear-gradient(180deg, rgba(120, 200, 255, .3), rgba(40, 120, 200, .2)); color: #dff3ff; font-size: .78rem; font-weight: 700; }
 .mini-btn:hover { background: linear-gradient(180deg, rgba(140, 215, 255, .45), rgba(50, 140, 220, .32)); }
@@ -26339,6 +26344,15 @@ SA.GLOSSARY = [
 <script>
 /* What changed in each version. Newest first. Feeds #/whats-new and the post-update popup. */
 SA.CHANGELOG = [
+  { v: "1.1.2", date: "2026-10-17", title: "No more white window", items: [
+    "Fixed: on some graphics cards (like Intel HD 520) the window stayed white, because too many frosted-glass panels were blurring the sky at once. Now only the big panels blur and the rest use a frosted fill",
+    "If drawing ever freezes anyway, the app notices, restarts itself in safe graphics and remembers that for this version"
+  ] },
+  { v: "1.1.1", date: "2026-10-17", title: "Duel polish", items: [
+    "Friends, duels, leagues, the activity feed and cloud saves are switched on",
+    "Fixed: if your friend won a duel while your window was in the background, the result could disappear",
+    "Fixed: losing a duel no longer pays out the winner's bits"
+  ] },
   { v: "1.1.0", date: "2026-10-17", title: "The Bubble Bazaar", items: [
     "47 languages! New courses for Zig, Nim, Crystal, D, Fortran, Pascal, Ada, Assembly (x86-64), Odin, Groovy, Octave, COBOL and Prolog, every lesson tested with the real compiler",
     "Bits: earn them from lessons, quests, challenges, labs, duels, badges and level-ups",
@@ -26363,7 +26377,7 @@ SA.CHANGELOG = [
 /* State and persistence: a JSON file through the launcher (installed app), else localStorage. */
 (function () {
   const KEY = "syntax-academy-v1";
-  SA.VERSION = "1.1.0";
+  SA.VERSION = "1.1.2";
 
   SA.defaults = () => ({
     v: 1,
@@ -26590,7 +26604,7 @@ SA.CHANGELOG = [
   });
   SA.on("challenge-solved", ({ c, first }) => { if (first) SA.addBits(10 + 5 * (c.diff || 1), "challenge"); });
   SA.on("lab-done", () => SA.addBits(30, "lab"));
-  SA.on("duel-done", ({ won }) => won && SA.addBits(20, "duel won"));
+  SA.on("duel-done", ({ won }) => won > 0 && SA.addBits(20, "duel won")); // won: 1, 0 (tie) or -1
   SA.on("arcade-done", ({ score }) => SA.addBits(Math.min(25, Math.floor((score || 0) / 40)), "arcade"));
   SA.on("badge", b => setTimeout(() => SA.addBits(25, b.name), 1200));
   SA.on("xp", () => {
@@ -29612,6 +29626,7 @@ SA.ONLINE_CONFIG = { url: "https://erstexcypkidzvzjajod.supabase.co", key: "sb_p
       if (won > 0) { SA.addXP(40, "Duel won"); SA.confetti(90); SA.sound("done"); O().post("duel", { vs: opp.username }); } else SA.addXP(15, "Duel played");
       O().recordDuel(roomId, race ? game : "code:" + c?.id, opp.id, race ? myDone || 0 : myDone ? Math.min(999999, Math.round(myDone.ms / 1000)) : 0).catch(() => {});
       SA.emit("duel-done", { won });
+      if (!startAt) stage.innerHTML = ""; // ended during the countdown (e.g. this window was in the background)
       stage.insertAdjacentHTML("afterbegin", `<div class="done-banner" style="margin-bottom:14px">${SA.BYTE(won > 0 ? "happy" : won < 0 ? "sad" : "wink")}<div class="grow"><h2 style="margin:0">${won > 0 ? "You win! 🏆" : won < 0 ? `${name(opp)} wins this time` : "It's a tie!"}</h2><p class="small muted" style="margin:2px 0 0">${txt}${theirDone && !race ? ` · they took ${SA.fmtMs(theirDone.ms)} with ${esc(SA.LANG_BY_ID[theirDone.lang]?.name || theirDone.lang)}` : ""}</p></div><a class="btn primary" href="#/friends">Back to friends</a></div>`);
     };
     const begin = () => {
@@ -29620,6 +29635,7 @@ SA.ONLINE_CONFIG = { url: "https://erstexcypkidzvzjajod.supabase.co", key: "sb_p
       const t = setInterval(() => { n--; const el = $("#d-count"); if (!el) return clearInterval(t); if (n > 0) { el.textContent = n; SA.sound("click"); } else { clearInterval(t); go(); } }, 800);
     };
     const go = () => {
+      if (finished) return;
       startAt = Date.now(); SA.sound("join");
       if (race) {
         SA.playGame(stage, game, { seed: roomId, embed: true,
