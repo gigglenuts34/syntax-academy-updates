@@ -39,6 +39,8 @@ DATA_DIR = _user_dir("XDG_DATA_HOME", "~/.local/share")
 CACHE_DIR = _user_dir("XDG_CACHE_HOME", "~/.cache")
 STATE_FILE = os.path.join(DATA_DIR, "state.json")
 WINDOW_FILE = os.path.join(DATA_DIR, "window.json")
+# Written when GPU drawing froze on this computer: that version then starts in safe graphics.
+GFX_FALLBACK_FILE = os.path.join(DATA_DIR, "gfx-fallback.json")
 # The page may only reach the optional AI providers: Claude's API or a local Ollama.
 HTTP_HOSTS = {"api.anthropic.com", "localhost", "127.0.0.1", "::1"}
 UPDATE_DIR = os.path.join(DATA_DIR, "updates")
@@ -513,6 +515,10 @@ RUNNING_CORE_SHA = _running_core_sha()
 
 
 def main_gui():
+    global SAFE_GFX
+    if not SAFE_GFX and read_json(GFX_FALLBACK_FILE, {}).get("version") == ((downloaded_update() or {}).get("version") or UPDATE_CONF.get("version", "")):
+        SAFE_GFX = True
+        os.environ.setdefault("WEBKIT_DISABLE_DMABUF_RENDERER", "1")
     import gi
     gi.require_version("Gtk", "3.0")
     gi.require_version("WebKit2", "4.1")
@@ -643,6 +649,7 @@ def main_gui():
                 pass
             self.view.connect("context-menu", lambda *a: not DEBUG)
             self.view.connect("decide-policy", self.on_policy)
+            self.view.connect("load-changed", self.on_load_changed)
             self.add(self.view)
 
             self.load_app(os.environ.pop("SYNTAX_ACADEMY_ROUTE", ""))
@@ -657,13 +664,41 @@ def main_gui():
             self.running = upd["version"] if upd else UPDATE_CONF.get("version", "")
             info = {"running": self.running, "bundled": UPDATE_CONF.get("version", ""), "fromUpdate": bool(upd), "feed": bool(self.feed()), "signed": bool(UPDATE_CONF.get("pubkey"))}
             gfx = "safe" if SAFE_GFX or os.environ.get("WEBKIT_DISABLE_DMABUF_RENDERER") == "1" else "gpu"
-            boot = "window.__SA_NATIVE__=true;window.__SA_STATE__=%s;window.__SA_UPDATE__=%s;window.__SA_GFX__=%s;window.__SA_GPU__=%s;" % (json.dumps(read_json(STATE_FILE, None)), json.dumps(info), json.dumps(gfx), json.dumps(gpu_name()))
+            boot = "window.__SA_FRAMES__=0;requestAnimationFrame(function t(){__SA_FRAMES__++;requestAnimationFrame(t)});window.__SA_NATIVE__=true;window.__SA_STATE__=%s;window.__SA_UPDATE__=%s;window.__SA_GFX__=%s;window.__SA_GPU__=%s;" % (json.dumps(read_json(STATE_FILE, None)), json.dumps(info), json.dumps(gfx), json.dumps(gpu_name()))
             self.ucm.remove_all_scripts()
             self.ucm.add_script(WebKit2.UserScript.new(boot, WebKit2.UserContentInjectedFrames.TOP_FRAME, WebKit2.UserScriptInjectionTime.START, None, None))
             uri = GLib.filename_to_uri(index, None)
             if route and re.fullmatch(r"#/[\w./%-]*", route):
                 uri += route
             self.view.load_uri(uri)
+
+        # ---------- frozen-drawing watchdog ----------
+        # Some GPU/driver combos stop drawing after the first frame (a white window) while the page
+        # itself keeps running. If frames don't advance while the window is visible, remember it for
+        # this version and restart in safe graphics.
+        def on_load_changed(self, _view, event):
+            if event == WebKit2.LoadEvent.FINISHED and not SAFE_GFX:
+                self.watch_tries = 0
+                GLib.timeout_add_seconds(5, self.check_drawing)
+
+        def check_drawing(self):
+            def got(view, res):
+                try:
+                    seen = view.evaluate_javascript_finish(res).to_string()
+                except GLib.Error:
+                    return
+                state, _, frames = seen.partition(":")
+                if state != "visible":
+                    self.watch_tries += 1
+                    if self.watch_tries < 12:
+                        GLib.timeout_add_seconds(5, self.check_drawing)
+                elif int(frames or 0) < 3:
+                    print("syntax-academy: drawing froze; restarting in safe graphics", file=sys.stderr)
+                    write_json(GFX_FALLBACK_FILE, {"version": self.running, "at": int(time.time())})
+                    os.environ["SYNTAX_ACADEMY_SAFE_GRAPHICS"] = "1"
+                    self.restart_process("")
+            self.view.evaluate_javascript("document.visibilityState + ':' + (window.__SA_FRAMES__ || 0)", -1, None, None, None, got)
+            return False
 
         # ---------- updates ----------
         def settings(self):
