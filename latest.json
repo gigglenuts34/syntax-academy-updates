@@ -1,14 +1,14 @@
 {
   "app": "syntax-academy",
-  "version": "1.4.8",
-  "file": "SyntaxAcademy-1.4.8.html",
-  "sha256": "419c66eb638e624001a4ef17be8848331cb021e3dd2f217f689bb0ec5453958d",
-  "size": 4449197,
-  "core": "core-1.4.8.py",
+  "version": "1.5.0",
+  "file": "SyntaxAcademy-1.5.0.html",
+  "sha256": "22bf147e2c5e4a493ebb71abc98aba6ef6fa64ed9a0d4e795c9852eff1833f2e",
+  "size": 4565590,
+  "core": "core-1.5.0.py",
   "core_sha256": "58123f211adeda1b5986272a64d5939032e34fbcc9616efc478734d8e62a270e",
   "core_size": 50382,
   "date": "2026-10-18",
   "notes": [
-    "Zero to pro: Rust"
+    "Python from zero, and a real terminal"
   ]
 }
