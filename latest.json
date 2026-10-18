@@ -1,14 +1,14 @@
 {
   "app": "syntax-academy",
-  "version": "1.4.0",
-  "file": "SyntaxAcademy-1.4.0.html",
-  "sha256": "ec001125177c281b62f49d9d4c933b9551221b15b362a4664430918afe391baa",
-  "size": 2469035,
-  "core": "core-1.4.0.py",
+  "version": "1.4.1",
+  "file": "SyntaxAcademy-1.4.1.html",
+  "sha256": "5df3b4777f170633562b6e7a95863f942c7471ae96ea6b1bd9f303fbc879ed51",
+  "size": 2628279,
+  "core": "core-1.4.1.py",
   "core_sha256": "58123f211adeda1b5986272a64d5939032e34fbcc9616efc478734d8e62a270e",
   "core_size": 50382,
   "date": "2026-10-17",
   "notes": [
-    "Zero to pro: Python. New course stages (Meet, Thinking in, Advanced, Reading real code, Projects, Pro certification), 29 new Python lessons, checkpoint exams, output and bug-hunt questions, and the Daily warm-up with spaced repetition."
+    "Zero to pro: JavaScript. 30 new JavaScript lessons (event loop, promises, closures, prototypes, iterators, testing...), code reading, 4 projects and 200+ questions."
   ]
 }
