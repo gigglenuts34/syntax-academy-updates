@@ -307,16 +307,14 @@ input[type="range"] { accent-color: var(--accent); width: 100%; }
 .empty { text-align: center; padding: 30px 20px; } .empty-byte .byte { width: 110px; height: 110px; } .empty h3 { margin-top: 8px; }
 
 /* ---------- Byte ---------- */
-.byte { display: block; overflow: visible; width: 96px; height: 96px; }
-.by-float { animation: bob 3.4s ease-in-out infinite; transform-origin: 60px 64px; }
-.by-shadow { animation: shadow 3.4s ease-in-out infinite; transform-origin: 60px 117px; }
-.by-orb { animation: orb 2.2s ease-in-out infinite; }
-.by-blink { animation: blink 5.5s infinite; transform-origin: 60px 61px; }
-.byte.wave .by-float { animation: bob 3.4s ease-in-out infinite, tilt 2.4s ease-in-out infinite; }
+/* Byte bobs as one whole picture (the GPU just slides it), never by animating shapes inside the
+   SVG: that makes WebKit repaint the glossy gradients and glow filter on the CPU every frame. */
+.byte { display: block; overflow: visible; width: 96px; height: 96px; animation: bob 3.4s ease-in-out infinite; will-change: transform; }
+.av .byte, .nav-orb .byte, .brand .byte, .topbar .byte, .byte.still { animation: none; will-change: auto; }
+.byte.wave { animation: bob 3.4s ease-in-out infinite, tilt 2.4s ease-in-out infinite; transform-origin: 50% 60%; }
+.by-blink { transform-origin: 60px 61px; transition: transform .07s; }
+.byte.blinking .by-blink { transform: scaleY(.1); }
 @keyframes bob { 50% { transform: translateY(-5px); } }
-@keyframes shadow { 50% { transform: scaleX(.85); opacity: .14; } }
-@keyframes orb { 50% { filter: brightness(1.35) drop-shadow(0 0 4px #b8ff6a); } }
-@keyframes blink { 0%, 46%, 50%, 100% { transform: scaleY(1); } 48% { transform: scaleY(.1); } }
 @keyframes tilt { 0%, 100% { rotate: -4deg; } 50% { rotate: 4deg; } }
 .av { display: inline-grid; place-items: center; width: 40px; height: 40px; border-radius: 50%; font-size: 1.4rem; background: radial-gradient(circle at 35% 28%, #fff, #dcefff 60%, #b9d9f5); border: 1px solid var(--glass-border); box-shadow: 0 2px 8px rgba(0, 60, 120, .2), var(--inner); overflow: hidden; }
 :root[data-theme="dark"] .av { background: radial-gradient(circle at 35% 28%, #3a6a99, #16375e 70%); }
@@ -461,12 +459,13 @@ pre.code-block { padding: 10px 12px; border-radius: 10px; background: var(--code
 .profile-hero { display: flex; gap: 20px; align-items: center; padding: 22px 26px; border-radius: var(--r-lg); flex-wrap: wrap; }
 .badge-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 10px; }
 .badge { text-align: center; padding: 14px 10px; border-radius: var(--r); }
-.badge .badge-em { font-size: 2rem; display: block; filter: drop-shadow(0 3px 4px rgba(0, 40, 80, .25)); }
-.badge.locked { opacity: .45; filter: grayscale(1); }
+.badge .badge-em { font-size: 2rem; display: block; text-shadow: 0 3px 4px rgba(0, 40, 80, .25); }
+/* Dimmed with opacity and grey colours, not filter: grayscale(): a filter on every card makes the page slow to paint. */
+.badge.locked { opacity: .45; } .badge.locked .badge-em { filter: grayscale(1); text-shadow: none; }
 .badge b { display: block; font-family: var(--head); font-size: .92rem; margin-top: 4px; } .badge span { font-size: .74rem; color: var(--muted); }
 .passport { display: grid; grid-template-columns: repeat(auto-fill, minmax(64px, 1fr)); gap: 10px; }
 .stamp { display: flex; flex-direction: column; align-items: center; gap: 4px; font-size: .7rem; font-weight: 700; color: var(--muted); text-align: center; }
-.stamp.off .lorb { filter: grayscale(1) opacity(.35); }
+.stamp.off .lorb { --c1: #a3b0bd !important; --c2: #6f7c8a !important; opacity: .4; }
 
 /* modals, toasts, palette */
 .scrim { position: fixed; inset: 0; z-index: 100; display: grid; place-items: center; padding: 20px; background: rgba(4, 30, 60, .45); animation: fade .2s; }
@@ -669,7 +668,7 @@ svg.larry-svg { width: 100%; height: auto; display: block; overflow: visible; fi
 /* motion */
 :root[data-motion="off"] *, :root[data-motion="off"] *::before, :root[data-motion="off"] *::after { animation: none !important; transition: none !important; }
 @media (prefers-reduced-motion: reduce) { :root:not([data-motion="on"]) *, :root:not([data-motion="on"]) *::before { animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; } }
-:root[data-lite="1"] .by-float, :root[data-lite="1"] .by-orb { animation: none; }
+:root[data-lite="1"] .byte { animation: none; }
 
 /* arcade bits */
 .bug-lines { padding: 8px 0 !important; }
@@ -701,7 +700,7 @@ ul.tight { margin: 0; padding-left: 18px; } ul.tight li { margin: 3px 0; }
 .shop-item { display: flex; flex-direction: column; align-items: center; gap: 6px; text-align: center; padding: 14px 12px; transition: transform .2s; }
 .shop-item:hover { transform: translateY(-3px); }
 .shop-item.on { border-color: var(--accent); box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 25%, transparent), var(--shadow); }
-.shop-item.locked .shop-prev { filter: grayscale(.85) opacity(.6); }
+.shop-item.locked .shop-prev { opacity: .5; }
 .shop-item .tag { white-space: normal; text-align: center; font-size: .72rem; }
 .shop-prev { height: 96px; display: grid; place-items: center; }
 .shop-prev .byte { width: 88px; height: 88px; }
@@ -941,6 +940,92 @@ pre.opt-out { margin: 0; white-space: pre-wrap; font-size: .82rem; background: n
 .av.frame-web { --frame: repeating-conic-gradient(#e6dcff 0 4deg, #2a1b3d 4deg 30deg); box-shadow: 0 0 10px rgba(155, 77, 255, .6); }
 :root[data-edtheme="haunted"], .ed-swatch[data-edtheme="haunted"] { --code-bg: rgba(18, 8, 30, .96); --code-bg-2: rgba(28, 12, 44, .96); --code-text: #f1e6ff; --code-line: rgba(255, 138, 31, .14); --code-muted: #8a74a8; --tk-k: #ff8a1f; --tk-s: #a6f06a; --tk-n: #ffb347; --tk-c: #7d6a99; --tk-f: #c99bff; --tk-t: #ff9ad5; --tk-b: #ffd166; --tk-o: #f1e6ff; --tk-cn: #ffb347; }
 .regex-q { font-size: 1.5rem; font-weight: 800; padding: 14px 18px; border-radius: 14px; background: var(--code-bg); color: #ffd479; text-align: center; overflow-x: auto; }
+
+/* ---------- data structures lab (1.3.0) ---------- */
+.ds-stage { min-height: 260px; margin-top: 14px; padding: 16px 8px; border-radius: 14px; background: var(--glass-weak); border: 1px solid var(--glass-edge); display: flex; flex-direction: column; justify-content: center; overflow-x: auto; }
+.ds-empty { color: var(--muted); font-weight: 700; text-align: center; padding: 18px; border: 2px dashed var(--glass-edge); border-radius: 12px; }
+.ds-box { position: relative; min-width: 56px; padding: 9px 14px; border-radius: 12px; text-align: center; font: 800 1rem var(--mono); background: linear-gradient(180deg, var(--glass-strong), var(--glass)); border: 1px solid var(--glass-border); box-shadow: 0 3px 8px rgba(0, 40, 90, .12), inset 0 1px 0 rgba(255, 255, 255, .6); color: var(--text); }
+.ds-box.walk { animation: ds-walk .35s var(--d, 0s) both; }
+.ds-box.hit { animation: ds-hit .55s var(--d, 0s) both; }
+@keyframes ds-walk { 40% { transform: translateY(-5px); } to { background: linear-gradient(180deg, #fff3c4, #ffd54f); color: #3b2a00; border-color: #e0a800; } }
+@keyframes ds-hit { 0% { transform: scale(.6); opacity: .2; } 60% { transform: scale(1.12); } to { transform: none; opacity: 1; background: linear-gradient(180deg, #c8f7dc, #4cd99a); color: #053b22; border-color: #1fae6a; } }
+.ds-tag { position: absolute; font: 800 .62rem var(--head); text-transform: uppercase; letter-spacing: .06em; color: var(--accent-lo); white-space: nowrap; }
+.ds-stack .ds-tag { right: -44px; top: 50%; transform: translateY(-50%); }
+.ds-queue .ds-tag, .ds-list .ds-tag { top: -18px; left: 50%; transform: translateX(-50%); }
+.ds-stack { display: flex; flex-direction: column; align-items: center; gap: 5px; width: 160px; margin: 0 auto; }
+.ds-stack .ds-box { width: 120px; }
+.ds-floor { width: 150px; height: 6px; border-radius: 3px; background: var(--muted); opacity: .4; margin-top: 2px; }
+.ds-queue, .ds-list { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; justify-content: center; padding-top: 18px; }
+.ds-end { font: 700 .75rem var(--head); color: var(--muted); }
+.ds-arrow { color: var(--muted); font-weight: 800; }
+.ds-null { font: 700 .8rem var(--mono); color: var(--muted); padding: 6px 10px; border: 1px dashed var(--glass-edge); border-radius: 10px; }
+.ds-out { display: flex; gap: 5px; flex-wrap: wrap; align-items: center; justify-content: center; margin-top: 14px; }
+.ds-chip { font: 700 .78rem var(--mono); padding: 2px 8px; border-radius: 99px; background: var(--glass-strong); border: 1px solid var(--glass-edge); }
+.ds-tree { width: 100%; max-height: 380px; display: block; margin: 0 auto; overflow: visible; }
+.ds-tree line { stroke: var(--muted); stroke-width: 2; opacity: .55; }
+.ds-tree circle { fill: var(--glass-strong); stroke: var(--accent); stroke-width: 2.5; }
+.ds-tree text { text-anchor: middle; font: 800 13px var(--mono); fill: var(--text); }
+.ds-tn.walk circle { animation: ds-walk-c .35s var(--d, 0s) both; }
+.ds-tn.hit circle { animation: ds-hit-c .55s var(--d, 0s) both; }
+@keyframes ds-walk-c { to { fill: #ffd54f; stroke: #e0a800; } }
+@keyframes ds-hit-c { 0% { r: 6; } 60% { r: 22; } to { r: 18; fill: #4cd99a; stroke: #1fae6a; } }
+.ds-hash { display: flex; flex-direction: column; gap: 5px; }
+.ds-bucket { display: flex; align-items: center; gap: 6px; padding: 4px 8px; border-radius: 10px; min-height: 40px; flex-wrap: wrap; }
+.ds-bucket.on { background: color-mix(in srgb, var(--accent) 14%, transparent); }
+.ds-bi { width: 28px; height: 28px; display: grid; place-items: center; border-radius: 8px; background: var(--glass-strong); border: 1px solid var(--glass-edge); font-weight: 800; font-size: .8rem; flex: none; }
+.ds-kv { padding: 5px 10px; font-size: .82rem; min-width: 0; }
+.ds-kv b { color: var(--accent-lo); margin-right: 4px; }
+.ds-math { display: block; font: 600 .82rem var(--mono); color: var(--muted); margin-bottom: 3px; }
+.ds-log { list-style: none; margin: 6px 0 0; padding: 0; display: flex; flex-direction: column; gap: 4px; }
+.ds-log li { display: flex; gap: 10px; align-items: baseline; font-size: .84rem; padding: 5px 8px; border-radius: 8px; background: var(--glass-weak); }
+.ds-log li:first-child { outline: 1px solid color-mix(in srgb, var(--accent) 40%, transparent); }
+.ds-log li.bad .ds-op { color: var(--bad); }
+.ds-log .ds-math { display: none; }
+.ds-op { font-weight: 800; white-space: nowrap; color: var(--accent-lo); }
+.ds-cost { font-size: .72rem; font-weight: 800; padding: 1px 6px; border-radius: 6px; background: var(--glass-strong); white-space: nowrap; }
+.ds-missions { display: flex; flex-direction: column; gap: 4px; margin-top: 6px; }
+.ds-m { display: flex; gap: 8px; font-size: .85rem; padding: 4px 6px; border-radius: 8px; }
+.ds-m.done { color: var(--muted); text-decoration: line-through; text-decoration-color: color-mix(in srgb, var(--ok) 60%, transparent); }
+.bad-text { color: var(--bad) !important; }
+
+/* bits & bytes lab */
+.bit-reg { display: grid; grid-template-columns: repeat(8, minmax(0, 1fr)); gap: 6px; max-width: 620px; }
+.bit-reg.small { grid-template-columns: repeat(8, 30px); gap: 3px; max-width: none; }
+.bit { display: flex; flex-direction: column; align-items: center; gap: 2px; padding: 12px 0 8px; border-radius: 14px; border: 1px solid var(--glass-border); background: var(--glass-weak); color: var(--muted); cursor: pointer; transition: background .15s, transform .1s, box-shadow .15s; }
+.bit b { font: 800 1.8rem var(--mono); line-height: 1; }
+.bit span { font: 700 .72rem var(--head); }
+.bit:hover:not([disabled]) { transform: translateY(-2px); }
+.bit.on { background: linear-gradient(180deg, #fff59d, #ffc107); color: #3b2a00; box-shadow: 0 0 16px rgba(255, 193, 7, .55), inset 0 1px 0 #fff; border-color: #e0a800; }
+.bit-reg.small .bit { padding: 4px 0; border-radius: 7px; cursor: default; }
+.bit-reg.small .bit:not([disabled]) { cursor: pointer; }
+.bit-reg.small .bit b { font-size: .95rem; }
+.bit[disabled] { opacity: 1; }
+.bit-readout { display: grid; grid-template-columns: repeat(auto-fit, minmax(110px, 1fr)); gap: 8px; margin-top: 14px; }
+.bit-readout > div { display: flex; flex-direction: column; padding: 8px 12px; border-radius: 12px; background: var(--glass-weak); border: 1px solid var(--glass-edge); }
+.bit-readout b { font: 800 1.3rem var(--head); }
+.bit-readout b.mono { font-family: var(--mono); font-size: 1.1rem; }
+.bit-target { font: 800 1.6rem var(--head); } .bit-target b { color: var(--accent); font-size: 2.2rem; }
+.bit-row { display: grid; grid-template-columns: 70px auto 46px minmax(0, 1fr); gap: 12px; align-items: center; padding: 5px 0; }
+.bit-lbl { color: var(--accent-lo); } .bit-dec { text-align: right; }
+.bit-hr { border: 0; border-top: 2px solid var(--glass-edge); margin: 8px 0; }
+@media (max-width: 760px) { .bit-row { grid-template-columns: 60px auto 40px; } .bit-note { grid-column: 1 / -1; } }
+.bit-chars { display: flex; flex-wrap: wrap; gap: 8px; }
+.bit-char { display: flex; flex-direction: column; align-items: center; gap: 3px; padding: 8px 10px; border-radius: 12px; background: var(--glass-weak); border: 1px solid var(--glass-edge); }
+.bit-glyph { font-size: 1.7rem; line-height: 1.2; font-weight: 700; }
+.bit-byte { display: flex; gap: 6px; font-size: .74rem; padding: 2px 6px; border-radius: 6px; background: var(--code-bg); color: var(--code-text); }
+.bit-bases { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 10px; }
+.bit-bases label { display: flex; flex-direction: column; gap: 3px; }
+.bit-places { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 6px; }
+.bit-places > div { display: flex; flex-direction: column; align-items: center; min-width: 38px; padding: 4px; border-radius: 8px; background: var(--glass-weak); border: 1px solid var(--glass-edge); }
+.bit-places > div.on { background: color-mix(in srgb, #ffc107 35%, var(--glass-weak)); border-color: #e0a800; }
+
+/* ---------- performance (1.3.1) ---------- */
+/* Rosetta and the cheat sheets are dozens of big code blocks: skip the ones scrolled out of view.
+   (Not used on ordinary lists: there, laying items out as they scroll in costs more than it saves.) */
+.cheat, .ro-card { content-visibility: auto; }
+.cheat { contain-intrinsic-size: auto 320px; } .ro-card { contain-intrinsic-size: auto 380px; }
+/* The shop's item previews stand still; only the mirror Byte bobs. */
+.shop-prev .byte { animation: none; will-change: auto; }
 
 </style>
 </head>
@@ -1272,6 +1357,12 @@ SA.views = SA.views || {};
   SA.AVATARS = ["byte", "🦊", "🐙", "🐧", "🦉", "🐢", "🐳", "🦄", "🐸", "🤖", "👾", "🧙", "🐱", "🐼", "🦖", "🌵", "💀", "🚀", "🍄", "🫧"];
   // look: that person's Byte outfit ({hat, face, paint}), if they have one.
   SA.avatarHTML = (a, cls = "", look = null) => (!a || a === "byte") ? `<span class="av av-byte ${cls}">${look && SA.dressByte ? SA.dressByte(draw("happy"), look) : draw("happy")}</span>` : `<span class="av ${cls}">${SA.esc(a)}</span>`;
+  // Idle Bytes blink now and then. A short class toggle instead of an endless CSS animation, so the
+  // SVG only repaints for the blink itself.
+  setInterval(() => {
+    if (document.hidden || SA.reducedMotion?.()) return;
+    document.querySelectorAll(".byte.mood-idle").forEach(b => { b.classList.add("blinking"); setTimeout(() => b.classList.remove("blinking"), 150); });
+  }, 4800);
   SA.userName = () => (SA.state?.profile.name || "").trim() || "friend";
 })();
 
@@ -26516,6 +26607,17 @@ SA.GLOSSARY = [
 <script>
 /* What changed in each version. Newest first. Feeds #/whats-new and the post-update popup. */
 SA.CHANGELOG = [
+  { v: "1.3.1", date: "2026-10-17", title: "Smooth as glass", items: [
+    "Pages now run at a steady 60 frames a second, up from about 20 to 30 on slower laptops. Byte's bobbing was making the whole window redraw every frame; now your graphics card just slides him up and down",
+    "The animated sky runs at 60 fps instead of 30, and stops lowering its quality every time you open a big page",
+    "Smoother scrolling on long pages, and faster switching between pages (greyed-out badges, stamps and shop items are much cheaper to draw)"
+  ] },
+  { v: "1.3.0", date: "2026-10-17", title: "Bits & data structures", items: [
+    "New in the Workshop: the Data Structures Lab. Push, pop, insert and search on a live stack, queue, linked list, binary search tree and hash table, and watch every node each operation has to visit. 19 missions teach why some things are O(1) and others O(n)",
+    "New in the Workshop: the Bits & Bytes Lab. Flip the 8 bits of a byte, play target practice, try the bitwise operators, look inside emoji to see their UTF-8 bytes, and convert between binary, hex, octal and decimal",
+    "New arcade game: Binary Blitz",
+    "2 new daily quests and 5 new badges. Both labs earn Spooky Season candy too"
+  ] },
   { v: "1.2.0", date: "2026-10-17", title: "The Workshop", items: [
     "New: the Workshop, Byte's tinkering shed of hands-on tools",
     "Algorithm Visualizer: watch 6 sorting algorithms, 2 searches and 4 pathfinders think step by step, with the pseudocode lit up. Step backwards, draw mazes and mud, turn on the sound of sorting, and race two sorts against each other",
@@ -26560,7 +26662,7 @@ SA.CHANGELOG = [
 /* State and persistence: a JSON file through the launcher (installed app), else localStorage. */
 (function () {
   const KEY = "syntax-academy-v1";
-  SA.VERSION = "1.2.0";
+  SA.VERSION = "1.3.1";
 
   SA.defaults = () => ({
     v: 1,
@@ -26580,7 +26682,7 @@ SA.CHANGELOG = [
       pairs: 0, perfectQuizzes: 0, stackOverflows: 0, solutionsPeeked: 0,
       bits: 0, bitsEarned: 0, bitsInit: false, owned: {}, quests: {}, questsDone: 0, questSweeps: 0, lastLevel: 0, certs: {},
       notes: {}, bookmarks: {}, cards: {}, reviewed: 0, predicts: { right: 0, tries: 0 }, glossarySeen: {}, konami: false, earlyBird: false,
-      ws: { algos: {}, races: 0, regex: {}, git: {}, rosetta: {}, puzzles: {}, golf: {}, focus: { sessions: 0, minutes: 0, days: {} } }, event: {}
+      ws: { ds: {}, bits: {}, algos: {}, races: 0, regex: {}, git: {}, rosetta: {}, puzzles: {}, golf: {}, focus: { sessions: 0, minutes: 0, days: {} } }, event: {}
     },
     chat: [],
     account: null
@@ -26820,6 +26922,8 @@ SA.CHANGELOG = [
     { id: "regex-1", em: "🔍", text: "Solve a new regex puzzle", goal: 1, ev: "regex-solved", ok: d => d.first, bits: 25 },
     { id: "git-10", em: "🌳", text: "Run 10 commands in the Git Simulator", goal: 10, ev: "git-cmd", bits: 20 },
     { id: "focus-1", em: "🍅", text: "Finish a focus session", goal: 1, ev: "focus-done", bits: 30 },
+    { id: "ds-2", em: "🧱", text: "Finish 2 Data Structures Lab missions", goal: 2, ev: "ds-mission", bits: 30 },
+    { id: "bits-5", em: "💡", text: "Hit 5 targets in the Bits & Bytes Lab", goal: 5, ev: "bits-target", bits: 20 },
     { id: "rosetta-3", em: "🗿", text: "Explore 3 topics in the Rosetta Stone", goal: 3, ev: "rosetta-open", distinct: d => d, bits: 15 }
   ];
   const Q_BY_ID = Object.fromEntries(SA.QUESTS.map(q => [q.id, q]));
@@ -27147,6 +27251,8 @@ SA.CHANGELOG = [
   earn("git-mission", 3, "git mission", "git");
   earn("focus-done", d => Math.max(2, Math.round(d.mins / 5)), "focus session", "focus");
   earn("arcade-done", 2, "arcade");
+  earn("ds-mission", 3, "data structures mission", "ds");
+  earn("bits-target", 1, "binary target");
   earn("duel-done", d => d.won > 0 ? 6 : 2, "duel");
 
   // ---------- goals ----------
@@ -27169,7 +27275,7 @@ SA.CHANGELOG = [
       SA.EVENT_GOALS.forEach(g => {
         if (e.goals[g.id] || progressOf(g) < g.n) return;
         e.goals[g.id] = SA.today(); P().event.spooky = e; SA.save();
-        setTimeout(() => { SA.toast(`${g.em} Event goal done: <b>${esc(g.text)}</b>`, "good"); SA.addCandy(g.candy, "event goal"); if (SA.EVENT_GOALS.every(x => E().goals[x.id])) SA.celebrate("Spooktacular!", "Every Spooky Season goal done", { emoji: "🎃" }); }, 700);
+        setTimeout(() => { SA.toast(`<span>${g.em} Event goal done: <b>${esc(g.text)}</b></span>`, "good"); SA.addCandy(g.candy, "event goal"); if (SA.EVENT_GOALS.every(x => E().goals[x.id])) SA.celebrate("Spooktacular!", "Every Spooky Season goal done", { emoji: "🎃" }); }, 700);
       });
     } finally { checking = false; }
   };
@@ -27326,14 +27432,14 @@ void main(){
   const LEVELS = {
     ultra: { scale: 1, fps: 60, bubbles: 18, detail: 1, ribbons: 3, glass: "blur" },
     high: { scale: .75, fps: 60, bubbles: 14, detail: 1, ribbons: 3, glass: "blur" },
-    medium: { scale: .5, fps: 40, bubbles: 12, detail: 1, ribbons: 3, glass: "blur" },
-    low: { scale: .38, fps: 24, bubbles: 8, detail: 0, ribbons: 2, glass: "soft" },
+    medium: { scale: .5, fps: 60, bubbles: 12, detail: 1, ribbons: 3, glass: "blur" },
+    low: { scale: .38, fps: 30, bubbles: 8, detail: 0, ribbons: 2, glass: "soft" },
     still: { scale: .5, fps: 0, bubbles: 10, detail: 1, ribbons: 3, glass: "flat" }
   };
   const ORDER = ["ultra", "high", "medium", "low"];
 
   let cv, gl, prog, U = {}, start = performance.now(), raf = 0, last = 0, level = "medium", mouse = [0, 0], tgtMouse = [0, 0];
-  let frames = [], autoTimer = 0, scene = null, failed = false;
+  let frames = [], autoTimer = 0, scene = null, failed = false, slow = 0;
   const S = () => SA.state?.settings || {};
 
   SA.gfx = {
@@ -27445,15 +27551,20 @@ void main(){
     raf = requestAnimationFrame(step);
   }
 
-  // Auto quality: if frames take much longer than the target, step down a level.
+  // Auto quality: if frames take much longer than the target, step down a level. It goes by the
+  // median frame and waits for two slow stretches in a row, so a burst of work (like opening a
+  // big page) doesn't knock the quality down for good.
   function adapt() {
-    const avg = frames.reduce((a, b) => a + b, 0) / frames.length;
-    SA.gfx.info.fps = Math.round(1000 / avg);
+    const med = frames.slice().sort((a, b) => a - b)[frames.length >> 1];
+    SA.gfx.info.fps = Math.round(1000 / med);
     frames = [];
     if ((S().gfx || "auto") !== "auto" || !document.hasFocus()) return;
     const target = 1000 / LEVELS[level].fps;
+    if (med <= target * 1.45) { slow = 0; return; }
+    if (++slow < 2) return;
+    slow = 0;
     const i = ORDER.indexOf(level);
-    if (avg > target * 1.45 && i >= 0 && i < ORDER.length - 1) {
+    if (i >= 0 && i < ORDER.length - 1) {
       level = ORDER[i + 1]; SA.gfx.info.level = level; setGlass(LEVELS[level].glass); resize(); setUniforms();
       SA.emit("gfx-level", level);
     }
@@ -29646,6 +29757,15 @@ SA.ONLINE_CONFIG = { url: "https://erstexcypkidzvzjajod.supabase.co", key: "sb_p
         const opts = SA.shuffleSeeded([q.o, ...others], String(rng()));
         return { html: `<p class="lead" style="margin-top:0">What's the time complexity, in Big-O?</p>${SA.codeBlock(q.code, "python", { run: false, open: false, title: "n = len(items)" })}`, opts: opts.map(o => `<b class="mono">${o}</b>`), c: opts.indexOf(q.o), grid: true, why: q.why };
       } },
+    binary: { title: "Binary Blitz", emoji: "💡", blurb: "Read the bits, find the number (or the other way round). 8 bits, 10 seconds.", rounds: 10, secs: 12,
+      make(rng) {
+        const n = 1 + Math.floor(rng() * 255), toDec = rng() < .5, b = x => x.toString(2).padStart(8, "0");
+        const wrong = SA.shuffleSeeded([0, 1, 2, 3, 4, 5, 6, 7].map(k => n ^ (1 << k)), String(rng())).slice(0, 3);
+        const opts = SA.shuffleSeeded([n, ...wrong], String(rng()));
+        return { html: toDec ? `<p class="lead" style="margin-top:0">What number is this in decimal?</p><div class="regex-q mono">${b(n)}</div>` : `<p class="lead" style="margin-top:0">Which bits make <b>${n}</b>?</p>`,
+          opts: opts.map(x => toDec ? `<b>${x}</b>` : `<b class="mono">${b(x)}</b>`), c: opts.indexOf(n), grid: true,
+          why: `${b(n)} = ${[128, 64, 32, 16, 8, 4, 2, 1].filter(p => n & p).join(" + ")} = ${n}` };
+      } },
     regex: { title: "Regex Match", emoji: "🔍", blurb: "One pattern, four strings. Which one does it match?", rounds: 8, secs: 20,
       make(rng) {
         const lv = (SA.RX_LEVELS || [])[Math.floor(rng() * (SA.RX_LEVELS || []).length)]; if (!lv || lv.no.length < 3) return null;
@@ -30489,6 +30609,8 @@ SA.ONLINE_CONFIG = { url: "https://erstexcypkidzvzjajod.supabase.co", key: "sb_p
     { id: "puzzles-10", em: "🧩", name: "Puzzler", desc: "Solve 10 code puzzles.", test: () => Object.keys(W().puzzles).length >= 10 },
     { id: "puzzles-50", em: "🖼️", name: "Puzzle master", desc: "Solve 50 code puzzles.", test: () => Object.keys(W().puzzles).length >= 50 },
     { id: "focus-10", em: "🍅", name: "Deep focus", desc: "Finish 10 focus sessions.", test: () => W().focus.sessions >= 10 },
+    { id: "ds-5", em: "🧱", name: "Structured", desc: "Finish 5 Data Structures Lab missions.", test: () => Object.keys(W().ds).length >= 5 },
+    { id: "ds-all", em: "🏗️", name: "Data architect", desc: "Finish every Data Structures Lab mission.", test: () => Object.entries(SA.DS || {}).every(([k, d]) => d.missions.every((m, i) => W().ds[`${k}:${i}`])) },
     { id: "focus-600", em: "🧘", name: "Flow state", desc: "Focus for 10 hours in total.", test: () => W().focus.minutes >= 600 }
   );
 
@@ -31977,6 +32099,445 @@ SA.ONLINE_CONFIG = { url: "https://erstexcypkidzvzjajod.supabase.co", key: "sb_p
 
 </script>
 <script>
+/* Workshop: the Data Structures Lab (#/workshop/ds/<kind>). Push, pop, insert and search on a live
+   stack, queue, linked list, binary search tree and hash table. Every operation animates the nodes
+   it had to visit, so you can see why some operations are O(1) and others O(n). */
+(function () {
+  const { esc, icon, $, $$ } = SA;
+  const P = () => SA.state.prog;
+  SA.WS_TOOLS = SA.WS_TOOLS || {};
+  const rnd = (a, b) => a + Math.floor(Math.random() * (b - a + 1));
+  const pick = a => a[Math.floor(Math.random() * a.length)];
+  const KEYS = ["byte", "larry", "tux", "ada", "linus", "grace", "alan", "kiwi", "plum", "fig", "owl", "fox", "moon", "star", "emu", "yak"];
+  const VALS = ["🍕", "🎸", "🚀", "🐧", "🌵", "🎃", "🍩", "⚽", "🎲", "🧁", "🦊", "🌈"];
+  const MAX = 10;
+  let uid = 0;
+  const mk = v => ({ id: ++uid, v });
+
+  // ---------- binary search tree helpers ----------
+  const height = n => n ? 1 + Math.max(height(n.l), height(n.r)) : 0;
+  const count = n => n ? 1 + count(n.l) + count(n.r) : 0;
+  const order = (n, kind, out = []) => {
+    if (!n) return out;
+    if (kind === "pre") out.push(n);
+    order(n.l, kind, out);
+    if (kind === "in") out.push(n);
+    order(n.r, kind, out);
+    return out;
+  };
+  const levels = root => { const out = [], q = root ? [root] : []; while (q.length) { const n = q.shift(); out.push(n); if (n.l) q.push(n.l); if (n.r) q.push(n.r); } return out; };
+
+  // ---------- hash table helpers ----------
+  const hashOf = (k, size) => { const codes = [...k].map(c => c.codePointAt(0)), sum = codes.reduce((a, b) => a + b, 0); return { codes, sum, i: sum % size }; };
+  const hashMath = (k, size) => { const h = hashOf(k, size); return `“${esc(k)}” → ${h.codes.join(" + ")} = ${h.sum} → ${h.sum} % ${size} = <b>${h.i}</b>`; };
+  const entries = st => st.buckets.flat();
+
+  const DS = {
+    stack: { name: "Stack", em: "🥞", input: "any",
+      about: "Like a pile of pancakes: you can only add to the top or take from the top. The last thing in is the first thing out (LIFO). Your browser's back button, undo, and the call stack that runs functions are all stacks.",
+      ops: [["push", "Push", true], ["pop", "Pop"], ["peek", "Peek"]],
+      costs: [["push", "O(1)"], ["pop", "O(1)"], ["peek", "O(1)"], ["search", "O(n)"]],
+      py: 'stack = []\nstack.append("B")   # push onto the top\ntop = stack[-1]     # peek at the top\nitem = stack.pop()  # pop it off',
+      init: () => ({ items: [], out: [] }),
+      apply(st, op, v) {
+        const top = st.items[st.items.length - 1];
+        if (op === "push") {
+          if (st.items.length >= MAX) return { msg: `Stack overflow! This stack holds ${MAX} things and it's full. (Real programs crash with this error when functions call each other forever.)`, bad: true, overflow: true };
+          const n = mk(v); st.items.push(n); return { msg: `Pushed ${esc(v)} on top. Nothing else had to move: O(1).`, hit: [n.id], cost: "O(1)" };
+        }
+        if (!top) return { msg: `Stack underflow: there's nothing to ${op}.`, bad: true };
+        if (op === "pop") { st.items.pop(); st.out.push(top.v); return { msg: `Popped ${esc(top.v)} off the top. It was the last one in, so it's the first one out.`, cost: "O(1)" }; }
+        return { msg: `The top is ${esc(top.v)}. Peeking looks without taking it off.`, hit: [top.id], cost: "O(1)", peek: true };
+      },
+      render(st, cls) {
+        const rows = st.items.slice().reverse().map((n, i) => `<div class="ds-box ${cls(n)}" style="--d:${cls.d(n)}s">${esc(n.v)}${i === 0 ? `<span class="ds-tag">top</span>` : ""}</div>`).join("");
+        return `<div class="ds-stack">${rows || `<div class="ds-empty">Empty stack</div>`}<div class="ds-floor"></div></div>${out("Popped, in order", st.out)}`;
+      },
+      missions: [
+        { text: "Push 5 things onto the stack", test: st => st.items.length >= 5 },
+        { text: "Spell BYTE backwards: push B, Y, T, E, then pop all four", test: st => st.out.slice(-4).join("").toUpperCase() === "ETYB" },
+        { text: "Cause a stack overflow", test: (st, r) => r.overflow }
+      ] },
+
+    queue: { name: "Queue", em: "🚶", input: "any",
+      about: "A line at the shop: people join at the back and are served from the front. The first one in is the first one out (FIFO). Printers, messages waiting to be sent and breadth-first search all use queues.",
+      ops: [["enqueue", "Enqueue", true], ["dequeue", "Dequeue"], ["peek", "Peek"]],
+      costs: [["enqueue", "O(1)"], ["dequeue", "O(1)"], ["peek", "O(1)"], ["search", "O(n)"]],
+      py: 'from collections import deque\nqueue = deque()\nqueue.append("A")        # enqueue at the back\nfront = queue[0]         # peek at the front\nfirst = queue.popleft()  # dequeue from the front',
+      init: () => ({ items: [], out: [] }),
+      apply(st, op, v) {
+        const front = st.items[0];
+        if (op === "enqueue") {
+          if (st.items.length >= MAX) return { msg: `The queue is full (${MAX} places). Serve someone first!`, bad: true };
+          const n = mk(v); st.items.push(n); return { msg: `${esc(v)} joined the back of the queue.`, hit: [n.id], cost: "O(1)" };
+        }
+        if (!front) return { msg: "Nobody's waiting: the queue is empty.", bad: true };
+        if (op === "dequeue") { st.items.shift(); st.out.push(front.v); return { msg: `Served ${esc(front.v)} from the front. They waited longest, so they go first.`, cost: "O(1)" }; }
+        return { msg: `Next up is ${esc(front.v)}. Peeking doesn't remove them.`, hit: [front.id], cost: "O(1)", peek: true };
+      },
+      render(st, cls) {
+        const boxes = st.items.map((n, i) => `<div class="ds-box ${cls(n)}" style="--d:${cls.d(n)}s">${esc(n.v)}${i === 0 ? `<span class="ds-tag">front</span>` : ""}${i === st.items.length - 1 && i ? `<span class="ds-tag">back</span>` : ""}</div>`).join("");
+        return `<div class="ds-queue"><span class="ds-end">served ⟵</span>${boxes || `<div class="ds-empty">Empty queue</div>`}<span class="ds-end">⟵ join</span></div>${out("Served, in order", st.out)}`;
+      },
+      missions: [
+        { text: "Let 4 things join the queue", test: st => st.items.length >= 4 },
+        { text: "First come, first served: enqueue A, B, C, then dequeue all three", test: st => st.out.slice(-3).join("").toUpperCase() === "ABC" },
+        { text: "Peek at who's next without removing them", test: (st, r) => r.peek }
+      ] },
+
+    list: { name: "Linked list", em: "🔗", input: "any",
+      about: "A chain of nodes. Each node holds a value and a pointer to the next one. Adding at the head is instant, but to reach anything else you have to follow the pointers one by one from the start.",
+      ops: [["first", "Add at head", true], ["last", "Add at tail", true], ["find", "Find", true], ["remove", "Remove", true]],
+      costs: [["add at head", "O(1)"], ["add at tail", "O(n)*"], ["find", "O(n)"], ["remove", "O(n)"]],
+      py: 'class Node:\n    def __init__(self, value):\n        self.value = value\n        self.next = None\n\nhead = Node(3)\nhead.next = Node(7)   # 3 → 7 → None\nnode = head\nwhile node:           # walking the list is O(n)\n    print(node.value)\n    node = node.next',
+      init: () => ({ items: [] }),
+      apply(st, op, v) {
+        const ids = st.items.map(n => n.id), at = st.items.findIndex(n => String(n.v) === String(v));
+        if (op === "first" || op === "last") {
+          if (st.items.length >= MAX) return { msg: `That's enough nodes for one screen (${MAX}). Remove one first.`, bad: true };
+          const n = mk(v);
+          if (op === "first") { st.items.unshift(n); return { msg: `New node ${esc(v)} points at the old head, and becomes the head. No walking needed: O(1).`, hit: [n.id], cost: "O(1)", head: st.items.length >= 2 }; }
+          st.items.push(n);
+          return { msg: `Walked ${ids.length} node${ids.length === 1 ? "" : "s"} to find the tail, then linked ${esc(v)} on. *Lists that also remember their tail can do this in O(1).`, walk: ids, hit: [n.id], cost: "O(n)" };
+        }
+        if (at < 0) return { msg: `Walked all ${ids.length} nodes and ${esc(v)} isn't in the list.`, walk: ids, bad: true, cost: "O(n)" };
+        const walk = ids.slice(0, at), steps = at + 1;
+        if (op === "find") return { msg: `Found ${esc(v)} after ${steps} step${steps === 1 ? "" : "s"}, following the pointers from the head.`, walk, hit: [ids[at]], cost: "O(n)", found: true, steps, last: at === st.items.length - 1 };
+        const size = st.items.length; st.items.splice(at, 1);
+        return { msg: at ? `Found ${esc(v)} after ${steps} steps, then pointed the node before it at the node after it. ${esc(v)} is skipped over and gone.` : `${esc(v)} was the head, so the head just moves to the next node.`, walk, cost: "O(n)", middle: at > 0 && at < size - 1 };
+      },
+      render(st, cls) {
+        const boxes = st.items.map((n, i) => `<div class="ds-box ${cls(n)}" style="--d:${cls.d(n)}s">${esc(n.v)}${i === 0 ? `<span class="ds-tag">head</span>` : ""}</div><span class="ds-arrow">→</span>`).join("");
+        return `<div class="ds-list">${boxes}<div class="ds-null">null</div></div>`;
+      },
+      missions: [
+        { text: "Build a list of 5 nodes", test: st => st.items.length >= 5 },
+        { text: "Add a node at the head of a list that isn't empty", test: (st, r) => r.head },
+        { text: "Find the last node of a 6+ node list (count the steps!)", test: (st, r) => r.found && r.last && r.steps >= 6 },
+        { text: "Remove a node from the middle of the list", test: (st, r) => r.middle }
+      ] },
+
+    bst: { name: "Binary search tree", em: "🌲", input: "num",
+      about: "Every node has up to two children: smaller values go left, bigger ones go right. Each comparison throws away half of what's left, so a nicely balanced tree finds anything in about log₂(n) steps. Insert values in sorted order, though, and it turns into a slow linked list.",
+      ops: [["insert", "Insert", true], ["find", "Find", true], ["remove", "Remove", true], ["in", "In-order"], ["pre", "Pre-order"], ["level", "Level-order"]],
+      costs: [["insert", "O(log n)*"], ["find", "O(log n)*"], ["remove", "O(log n)*"], ["walk all", "O(n)"]],
+      py: 'def insert(node, v):\n    if node is None:\n        return Node(v)\n    if v < node.value:\n        node.left = insert(node.left, v)\n    else:\n        node.right = insert(node.right, v)\n    return node',
+      init: () => ({ root: null }),
+      apply(st, op, v) {
+        if (["in", "pre", "level"].includes(op)) {
+          const ns = op === "level" ? levels(st.root) : order(st.root, op);
+          if (!ns.length) return { msg: "The tree is empty. Insert some numbers first.", bad: true };
+          const what = { in: "In-order (left, node, right) visits the values smallest to biggest", pre: "Pre-order (node, left, right) visits each node before its children: handy for copying a tree", level: "Level-order goes row by row, using a queue" }[op];
+          return { msg: `${what}: <b>${ns.map(n => n.v).join(", ")}</b>`, walk: ns.map(n => n.id), cost: "O(n)", trav: op, size: ns.length };
+        }
+        v = Number(v);
+        if (!Number.isInteger(v) || v < 0 || v > 999) return { msg: "This tree holds whole numbers from 0 to 999.", bad: true };
+        const path = [], trail = [];
+        let cur = st.root, parent = null;
+        while (cur && cur.v !== v) { path.push(cur.id); trail.push(`${v} ${v < cur.v ? "<" : ">"} ${cur.v}, go ${v < cur.v ? "left" : "right"}`); parent = cur; cur = v < cur.v ? cur.l : cur.r; }
+        const why = trail.length ? ` (${trail.join(" → ")})` : "";
+        if (op === "insert") {
+          if (cur) return { msg: `${v} is already in the tree, and this one doesn't keep duplicates.`, walk: [...path, cur.id], bad: true };
+          if (count(st.root) >= 15) return { msg: "That's a big enough tree for the screen (15 nodes). Remove some first.", bad: true };
+          const n = { ...mk(v), l: null, r: null };
+          if (!parent) st.root = n; else if (v < parent.v) parent.l = n; else parent.r = n;
+          return { msg: parent ? `Placed ${v} after ${path.length} comparison${path.length === 1 ? "" : "s"}${why}.` : `${v} is the root of a brand new tree.`, walk: path, hit: [n.id], cost: "O(log n)" };
+        }
+        if (!cur) return { msg: `${v} isn't in the tree. We knew after ${path.length} comparison${path.length === 1 ? "" : "s"}${why}, without looking at the rest.`, walk: path, bad: true, cost: "O(log n)" };
+        const steps = path.length + 1;
+        if (op === "find") return { msg: `Found ${v} in ${steps} step${steps === 1 ? "" : "s"}${why}.`, walk: path, hit: [cur.id], cost: "O(log n)", found: true, steps, size: count(st.root) };
+        // remove
+        const setChild = (p, from, to) => { if (!p) st.root = to; else if (p.l === from) p.l = to; else p.r = to; };
+        if (cur.l && cur.r) {
+          let sp = cur, s = cur.r; const sPath = [];
+          while (s.l) { sPath.push(s.id); sp = s; s = s.l; }
+          cur.v = s.v; setChild(sp, s, s.r);
+          return { msg: `${v} had two children, so it was replaced by its in-order successor ${s.v} (the smallest value in its right subtree), which was then removed from below.`, walk: [...path, ...sPath], hit: [cur.id], cost: "O(log n)", twoKids: true };
+        }
+        setChild(parent, cur, cur.l || cur.r);
+        return { msg: cur.l || cur.r ? `${v} had one child, which moved up to take its place.` : `${v} was a leaf (no children), so it was simply snipped off.`, walk: path, cost: "O(log n)" };
+      },
+      render(st, cls) {
+        if (!st.root) return `<div class="ds-empty" style="margin:40px auto">Empty tree. Insert a number to plant the root.</div>`;
+        const ns = order(st.root, "in"), pos = new Map(), H = height(st.root), W = Math.max(ns.length, 3) * 46;
+        const place = (n, d) => { if (!n) return; place(n.l, d + 1); pos.set(n, [ns.indexOf(n) * 46 + 23 + (W - ns.length * 46) / 2, d * 58 + 26]); place(n.r, d + 1); };
+        place(st.root, 0);
+        const lines = [], nodes = [];
+        pos.forEach(([x, y], n) => {
+          [n.l, n.r].forEach(c => { if (c) { const [cx, cy] = pos.get(c); lines.push(`<line x1="${x}" y1="${y}" x2="${cx}" y2="${cy}"/>`); } });
+          nodes.push(`<g class="ds-tn ${cls(n)}" style="--d:${cls.d(n)}s" transform="translate(${x} ${y})"><circle r="18"/><text dy="5">${n.v}</text></g>`);
+        });
+        return `<svg class="ds-tree" viewBox="0 0 ${W} ${H * 58 + 8}" style="max-width:${W * 1.4}px" role="img" aria-label="Binary search tree with ${ns.length} nodes">${lines.join("")}${nodes.join("")}</svg>
+          <div class="tiny muted" style="text-align:center">${ns.length} node${ns.length === 1 ? "" : "s"} · height ${H} · a perfectly balanced tree this size would have height ${Math.ceil(Math.log2(ns.length + 1))}</div>`;
+      },
+      missions: [
+        { text: "Grow a tree with 7 values", test: st => count(st.root) >= 7 },
+        { text: "Find a value in a 7+ node tree in 3 steps or fewer", test: (st, r) => r.found && r.steps <= 3 && r.size >= 7 },
+        { text: "Make a lopsided tree: insert 5+ values in sorted order", test: st => count(st.root) >= 5 && height(st.root) === count(st.root) },
+        { text: "Walk a 5+ node tree in-order and watch the values come out sorted", test: (st, r) => r.trav === "in" && r.size >= 5 },
+        { text: "Remove a node that has two children", test: (st, r) => r.twoKids }
+      ] },
+
+    hash: { name: "Hash table", em: "#️⃣", input: "pair",
+      about: "Turns each key into a bucket number with a hash function, so it can jump straight to the right place instead of searching. When two keys land in the same bucket (a collision), they share it as a little list. When the table gets too full, it grows and moves everything.",
+      ops: [["put", "Put", true], ["get", "Get", true], ["remove", "Remove", true]],
+      costs: [["put", "O(1)*"], ["get", "O(1)*"], ["remove", "O(1)*"], ["grow", "O(n)"]],
+      py: 'phone = {}                  # a Python dict is a hash table\nphone["byte"] = "555-0101"  # put: O(1) on average\nprint(phone["byte"])        # get: O(1) on average\ndel phone["byte"]           # remove',
+      init: () => ({ buckets: Array.from({ length: 8 }, () => []), last: "" }),
+      apply(st, op, k, val) {
+        k = String(k).trim().toLowerCase();
+        if (!k) return { msg: "Type a key first.", bad: true };
+        const size = st.buckets.length, { i } = hashOf(k, size), b = st.buckets[i], at = b.findIndex(e => e.k === k), walk = b.slice(0, at < 0 ? b.length : at).map(e => e.id);
+        st.last = k;
+        const math = `<span class="ds-math">${hashMath(k, size)}</span>`;
+        if (op === "put") {
+          if (at >= 0) { b[at].v = val; return { msg: `${math} “${esc(k)}” was already in bucket ${i}, so its value was updated.`, walk, hit: [b[at].id], cost: "O(1)" }; }
+          if (entries(st).length >= 24) return { msg: "The table's full enough for one screen. Remove some keys first.", bad: true };
+          const n = { ...mk(val), k }, collision = b.length > 0; b.push(n);
+          const res = { msg: `${math} ${collision ? `Collision! Bucket ${i} already has ${b.length - 1} entr${b.length === 2 ? "y" : "ies"}, so “${esc(k)}” joins its chain.` : `Stored in bucket ${i}.`}`, walk, hit: [n.id], cost: "O(1)", collision };
+          const n2 = entries(st).length;
+          if (n2 / size > .75 && size < 32) {
+            const all = entries(st); st.buckets = Array.from({ length: size * 2 }, () => []);
+            all.forEach(e => st.buckets[hashOf(e.k, size * 2).i].push(e));
+            Object.assign(res, { grew: true, msg: res.msg + ` <br>📈 The table was ${Math.round(n2 / size * 100)}% full (over 75%), so it grew from ${size} to ${size * 2} buckets and every key was re-hashed into its new spot.` });
+          }
+          return res;
+        }
+        if (at < 0) return { msg: `${math} Bucket ${i} ${b.length ? `has ${b.length} entr${b.length === 1 ? "y" : "ies"}, but none of them is` : "is empty, so there's no"} “${esc(k)}”.`, walk, bad: true, cost: "O(1)" };
+        if (op === "get") return { msg: `${math} Jumped straight to bucket ${i}${at ? ` and checked ${at + 1} entries in its chain` : ""}: “${esc(k)}” → ${esc(b[at].v)}`, walk, hit: [b[at].id], cost: "O(1)", found: true };
+        b.splice(at, 1);
+        return { msg: `${math} Removed “${esc(k)}” from bucket ${i}.`, walk, cost: "O(1)" };
+      },
+      render(st, cls) {
+        const n = entries(st).length, size = st.buckets.length, last = st.last ? hashOf(st.last, size).i : -1;
+        return `<div class="ds-hash">${st.buckets.map((b, i) => `<div class="ds-bucket ${i === last ? "on" : ""}"><span class="ds-bi mono">${i}</span>${b.map(e => `<div class="ds-box ds-kv ${cls(e)}" style="--d:${cls.d(e)}s"><b>${esc(e.k)}</b> ${esc(e.v)}</div>`).join(`<span class="ds-arrow">→</span>`) || `<span class="tiny muted">empty</span>`}</div>`).join("")}</div>
+          <div class="tiny muted" style="margin-top:8px">${n} entr${n === 1 ? "y" : "ies"} in ${size} buckets · load factor ${(n / size).toFixed(2)} (grows past 0.75) · hash(key) = sum of its character codes % ${size}</div>`;
+      },
+      missions: [
+        { text: "Store 5 key/value pairs", test: st => entries(st).length >= 5 },
+        { text: "Cause a collision: two keys in the same bucket", test: (st, r) => r.collision },
+        { text: "Fill the table past 75% so it has to grow", test: (st, r) => r.grew },
+        { text: "Get the value for a key that's in the table", test: (st, r) => r.found }
+      ] }
+  };
+  SA.DS = DS;
+
+  const out = (label, vals) => vals.length ? `<div class="ds-out"><span class="tiny muted">${label}:</span> ${vals.slice(-10).map(v => `<span class="ds-chip">${esc(v)}</span>`).join("")}</div>` : "";
+  const ST = {}, LOG = {};
+  const state = kind => (ST[kind] = ST[kind] || DS[kind].init());
+  const missionsDone = () => Object.keys(P().ws.ds).length;
+  const allMissions = () => Object.values(DS).reduce((a, d) => a + d.missions.length, 0);
+
+  const checkMissions = (kind, res) => {
+    const st = state(kind), done = P().ws.ds;
+    DS[kind].missions.forEach((m, i) => {
+      const id = `${kind}:${i}`;
+      if (done[id]) return;
+      let ok = false; try { ok = m.test(st, res); } catch { }
+      if (!ok) return;
+      done[id] = SA.today(); SA.save();
+      SA.sound("done"); SA.toast(`<span>${DS[kind].em} Mission done: <b>${esc(m.text)}</b></span>`, "good");
+      SA.addXP(10, "data structures"); SA.addBits(8, "data structures");
+      SA.emit("ds-mission", { id }); SA.checkBadges();
+      const box = $(`#ds-m-${i}`); if (box) { box.classList.add("done"); box.querySelector("span").textContent = "✅"; }
+      const n = $("#ds-mcount"); if (n) n.textContent = DS[kind].missions.filter((x, j) => done[`${kind}:${j}`]).length;
+    });
+  };
+
+  function view(v, kind) {
+    if (!DS[kind]) kind = "stack";
+    const D = DS[kind], st = state(kind), log = (LOG[kind] = LOG[kind] || []);
+    const defVal = () => D.input === "num" ? rnd(1, 99) : D.input === "pair" ? pick(KEYS) : rnd(1, 99);
+    v.innerHTML = `<div class="view wide">${SA.ui.pageHead("Data Structures Lab", "The shapes data lives in. Poke at them and watch which operations are instant and which have to walk through everything.", `<a class="btn sm" href="#/workshop">${icon("grid")} Workshop</a>`, "Workshop")}
+      <div class="pick-row" style="margin-bottom:12px">${Object.entries(DS).map(([k, d]) => `<a class="pick ${k === kind ? "on" : ""}" href="#/workshop/ds/${k}">${d.em} ${d.name}</a>`).join("")}</div>
+      <div class="av-layout"><div class="stack" style="gap:12px">
+        <div class="glass-card av-stage">
+          <form class="row wrap" id="ds-form" style="gap:8px" autocomplete="off">
+            <input class="input mono" id="ds-v" style="width:${D.input === "pair" ? 130 : 110}px" maxlength="${D.input === "pair" ? 10 : 6}" aria-label="${D.input === "pair" ? "Key" : "Value"}" placeholder="${D.input === "pair" ? "key" : "value"}" value="${defVal()}">
+            ${D.input === "pair" ? `<input class="input" id="ds-v2" style="width:90px" maxlength="12" aria-label="Value" placeholder="value" value="${pick(VALS)}">` : ""}
+            ${D.ops.map(([id, label, needs], i) => `<button class="btn sm ${i ? "" : "primary"}" ${i ? "type=\"button\"" : "type=\"submit\""} data-op="${id}" ${needs ? "" : "data-noval"}>${esc(label)}</button>`).join("")}
+            <span class="grow"></span><button class="btn sm ghost" type="button" id="ds-rand">🎲 Random fill</button><button class="btn sm ghost" type="button" id="ds-clear">${icon("trash")} Clear</button>
+          </form>
+          <div class="ds-stage" id="ds-stage"></div>
+          <div class="av-say" id="ds-say" aria-live="polite"></div>
+        </div>
+        <div class="glass-card"><div class="eyebrow">What happened</div><ol class="ds-log" id="ds-log"></ol></div>
+      </div><aside class="stack" style="gap:12px">
+        <div class="glass-card"><h3 style="margin:0 0 4px">${D.em} ${D.name}</h3><p class="small" style="margin:0 0 10px">${D.about}</p><div class="bigo">${D.costs.map(([k, o]) => `<div><span class="tiny muted">${k}</span><b class="mono">${o}</b></div>`).join("")}</div>${D.costs.some(c => c[1].includes("*")) ? `<p class="tiny muted" style="margin:6px 0 0">* ${kind === "bst" ? "when the tree is balanced. A lopsided tree is O(n)." : kind === "hash" ? "on average. If every key collides it's O(n)." : "without a tail pointer."}</p>` : ""}</div>
+        <div class="glass-card"><div class="eyebrow">Missions · <span id="ds-mcount">${D.missions.filter((m, i) => P().ws.ds[`${kind}:${i}`]).length}</span>/${D.missions.length}</div>
+          <div class="ds-missions">${D.missions.map((m, i) => { const ok = P().ws.ds[`${kind}:${i}`]; return `<div class="ds-m ${ok ? "done" : ""}" id="ds-m-${i}"><span>${ok ? "✅" : "▫️"}</span>${esc(m.text)}</div>`; }).join("")}</div></div>
+        <div class="glass-card"><div class="eyebrow">In Python</div>${SA.codeBlock(D.py, "python", { run: false })}</div>
+      </aside></div></div>`;
+    const stage = $("#ds-stage", v), say = $("#ds-say", v), inp = $("#ds-v", v), inp2 = $("#ds-v2", v);
+    const draw = (res = {}) => {
+      const walk = res.walk || [], hit = res.hit || [];
+      const cls = n => (walk.includes(n.id) ? "walk " : "") + (hit.includes(n.id) ? "hit" : "");
+      cls.d = n => walk.includes(n.id) ? walk.indexOf(n.id) * .22 : walk.length * .22;
+      stage.innerHTML = D.render(st, cls);
+      $("#ds-log", v).innerHTML = log.slice(-7).reverse().map(l => `<li class="${l.bad ? "bad" : ""}"><span class="ds-op mono">${esc(l.op)}</span><span class="grow">${l.msg}</span>${l.cost ? `<span class="ds-cost mono">${l.cost}</span>` : ""}</li>`).join("") || `<li class="muted">Nothing yet. Try the buttons above!</li>`;
+    };
+    const run = (op, val, quiet) => {
+      const opDef = D.ops.find(o => o[0] === op);
+      if (opDef[2] && !String(val).trim()) { inp.focus(); return; }
+      const res = D.apply(st, op, String(val).trim(), inp2?.value.trim() || pick(VALS)) || {};
+      if (quiet) return res;
+      log.push({ op: `${opDef[1]}${opDef[2] ? ` ${val}` : ""}`, msg: res.msg, cost: res.cost, bad: res.bad });
+      say.innerHTML = res.msg; say.classList.toggle("bad-text", !!res.bad);
+      SA.sound(res.bad ? "bad" : "pop");
+      draw(res);
+      SA.emit("ds-op", { kind, op });
+      checkMissions(kind, res);
+      if (opDef[2] && !res.bad && ["push", "enqueue", "first", "last", "insert", "put"].includes(op)) { inp.value = defVal(); if (inp2) inp2.value = pick(VALS); }
+      return res;
+    };
+    v.querySelectorAll("[data-op]").forEach(b => b.onclick = e => { e.preventDefault(); run(b.dataset.op, b.hasAttribute("data-noval") ? "" : inp.value); inp.select(); });
+    $("#ds-form", v).onsubmit = e => { e.preventDefault(); run(D.ops[0][0], inp.value); inp.select(); };
+    $("#ds-clear", v).onclick = () => { ST[kind] = D.init(); LOG[kind] = []; view(v, kind); };
+    $("#ds-rand", v).onclick = () => {
+      ST[kind] = D.init(); LOG[kind] = [];
+      const vals = SA.shuffleSeeded(Array.from({ length: 60 }, (_, i) => i + 10), String(Math.random()));
+      for (let i = 0; i < (kind === "bst" ? 9 : kind === "hash" ? 5 : 5); i++) D.apply(ST[kind], D.ops[0][0], kind === "hash" ? KEYS[(i * 5 + rnd(0, 3)) % KEYS.length] : String(vals[i]), pick(VALS));
+      view(v, kind);
+      $("#ds-say", v).textContent = "Filled with random values. Your turn!";
+    };
+    draw();
+    say.textContent = log.length ? "" : `Type a value and press ${D.ops[0][1]}, or hit Random fill.`;
+  }
+
+  SA.WS_TOOLS.ds = { order: 7, name: "Data Structures Lab", em: "🧱", blurb: "Play with stacks, queues, linked lists, trees and hash tables, and watch exactly how much work each operation takes.", view,
+    progress: () => `${missionsDone()}/${allMissions()} missions done` };
+  SA.dsApply = (kind, op, a, b) => DS[kind].apply(state(kind), op, a, b); // for tests
+  SA.dsReset = kind => { ST[kind] = DS[kind].init(); };
+})();
+
+</script>
+<script>
+/* Workshop: the Bits & Bytes Lab (#/workshop/bits/<tab>). Flip the 8 bits of a byte, hit target
+   numbers, try the bitwise operators, see how text turns into UTF-8 bytes, and convert between
+   number bases. */
+(function () {
+  const { esc, icon, $, $$ } = SA;
+  const P = () => SA.state.prog;
+  const B = () => P().ws.bits;
+  SA.WS_TOOLS = SA.WS_TOOLS || {};
+  const bin = (n, w = 8) => (n >>> 0).toString(2).padStart(w, "0").slice(-w);
+  const hex = n => "0x" + n.toString(16).toUpperCase().padStart(2, "0");
+  const signed = n => n > 127 ? n - 256 : n;
+  const PLACES = [128, 64, 32, 16, 8, 4, 2, 1];
+  const reg = (n, id, small) => `<div class="bit-reg ${small ? "small" : ""}" ${id ? `id="${id}"` : ""}>${PLACES.map((p, i) => { const on = n & p; return `<button class="bit ${on ? "on" : ""}" data-p="${p}" ${id ? "" : "tabindex=\"-1\" disabled"} aria-label="Bit worth ${p}: ${on ? 1 : 0}" aria-pressed="${!!on}"><b>${on ? 1 : 0}</b>${small ? "" : `<span>${p}</span>`}</button>`; }).join("")}</div>`;
+  let cur = 0, A = 0b11001010, Bv = 0b01011100, target = 0, streak = 0, text = "Hi 👋";
+  const newTarget = () => { let t; do t = 1 + Math.floor(Math.random() * 255); while (t === cur); target = t; };
+
+  const TABS = [["flip", "Flip the bits", "💡"], ["ops", "Bitwise operators", "⚙️"], ["text", "Text → bytes", "🔤"], ["bases", "Number bases", "🔢"]];
+  const OPS = [
+    ["A & B", (a, b) => a & b, "AND: 1 only where both are 1. Used to check or clear flags (“is bit 3 on?”)."],
+    ["A | B", (a, b) => a | b, "OR: 1 where either is 1. Used to switch flags on."],
+    ["A ^ B", (a, b) => a ^ b, "XOR: 1 where they differ. Do it twice and you get A back, which is why it shows up in encryption and in toggling things."],
+    ["~A", a => ~a & 255, "NOT: flips every bit."],
+    ["A << 1", a => (a << 1) & 255, "Shift left: every bit moves up one place, which doubles the number (the top bit falls off)."],
+    ["A >> 1", a => a >> 1, "Shift right: every bit moves down one place, which halves the number (rounding down)."]
+  ];
+
+  function flip(box) {
+    if (!target) newTarget();
+    const ch = cur >= 32 && cur < 127 ? `'${String.fromCharCode(cur)}'` : "—";
+    box.innerHTML = `<div class="glass-card av-stage"><div class="eyebrow">One byte = 8 bits</div><p class="small" style="margin:2px 0 12px">Each bit is a switch worth double the one to its right. Click them to add their values together.</p>
+        ${reg(cur, "bit-main")}
+        <div class="bit-readout"><div><span class="tiny muted">decimal</span><b>${cur}</b></div><div><span class="tiny muted">binary</span><b class="mono">${bin(cur)}</b></div><div><span class="tiny muted">hex</span><b class="mono">${hex(cur)}</b></div><div><span class="tiny muted">as a letter</span><b class="mono">${esc(ch)}</b></div><div title="Two's complement: the top bit counts as -128 instead of 128"><span class="tiny muted">signed</span><b>${signed(cur)}</b></div></div>
+        <p class="small muted" style="margin:8px 0 0">${cur ? `${cur} = ${PLACES.filter(p => cur & p).join(" + ")}` : "All switches off: 0."}</p>
+        <div class="row wrap" style="gap:6px;margin-top:10px">${[["clear", "Clear"], ["all", "All ones"], ["inc", "+1"], ["shl", "<< 1"], ["shr", ">> 1"], ["not", "NOT"]].map(([k, l]) => `<button class="btn sm" data-act="${k}">${esc(l)}</button>`).join("")}</div></div>
+      <div class="glass-card bit-game"><div class="row between wrap" style="gap:8px"><div><div class="eyebrow">Target practice</div><div class="bit-target">Make <b>${target}</b></div></div><div class="mini-stats" style="min-width:220px"><div><b>${streak}</b><span class="tiny muted">in a row</span></div><div><b>${B().targets || 0}</b><span class="tiny muted">hit ever</span></div></div></div>
+        <div class="row" style="gap:6px;margin-top:8px"><button class="btn sm ghost" id="bit-hint">${icon("bulb")} Hint</button><button class="btn sm ghost" id="bit-skip">Skip</button><span class="small muted" id="bit-hinted"></span></div></div>`;
+    $$("#bit-main .bit", box).forEach(b => b.onclick = () => { cur ^= +b.dataset.p; SA.sound("click"); after(box); });
+    $$("[data-act]", box).forEach(b => b.onclick = () => {
+      cur = { clear: 0, all: 255, inc: (cur + 1) & 255, shl: (cur << 1) & 255, shr: cur >> 1, not: ~cur & 255 }[b.dataset.act];
+      if (b.dataset.act === "inc" && cur === 0) SA.toast("<span>255 + 1 wrapped around to 0. That's an <b>overflow</b>: 8 bits can't hold 256.</span>", "info");
+      SA.sound("click"); after(box);
+    });
+    $("#bit-hint", box).onclick = () => { $("#bit-hinted", box).textContent = `${target} = ${PLACES.filter(p => target & p).join(" + ")}`; streak = 0; };
+    $("#bit-skip", box).onclick = () => { streak = 0; newTarget(); flip(box); };
+  }
+  const after = box => {
+    if (cur === target) {
+      streak++; B().targets = (B().targets || 0) + 1; B().best = Math.max(B().best || 0, streak); SA.save();
+      SA.sound("ok"); SA.toast(`🎯 ${target} = <b class="mono">${bin(target)}</b>${streak > 1 ? ` · ${streak} in a row!` : ""}`, "good");
+      SA.addBits(streak % 5 === 0 ? 10 : 2, "binary target");
+      SA.emit("bits-target", { target, streak }); SA.checkBadges();
+      if (streak % 5 === 0) SA.confetti(25);
+      newTarget();
+    }
+    flip(box);
+  };
+
+  function ops(box) {
+    const row = (label, n, editable, id, note) => `<div class="bit-row"><b class="mono bit-lbl">${label}</b>${reg(n, editable ? id : "", true)}<b class="mono bit-dec">${n}</b>${note ? `<span class="tiny muted bit-note">${note}</span>` : ""}</div>`;
+    box.innerHTML = `<div class="glass-card av-stage"><p class="small" style="margin:0 0 12px">Bitwise operators work on each column of bits separately. Click the bits of <b>A</b> and <b>B</b> and watch every result change. Every language from C to Python to JavaScript has these.</p>
+      ${row("A", A, true, "bit-a")}${row("B", Bv, true, "bit-b")}<hr class="bit-hr">
+      ${OPS.map(([l, f, why]) => row(l, f(A, Bv), false, "", why)).join("")}</div>`;
+    $$("#bit-a .bit", box).forEach(b => b.onclick = () => { A ^= +b.dataset.p; SA.sound("click"); ops(box); });
+    $$("#bit-b .bit", box).forEach(b => b.onclick = () => { Bv ^= +b.dataset.p; SA.sound("click"); ops(box); });
+  }
+
+  const utf8 = ch => [...new TextEncoder().encode(ch)];
+  function textTab(box) {
+    box.innerHTML = `<div class="glass-card av-stage"><p class="small" style="margin:0 0 10px">Computers only store numbers, so text is stored as a code for each character. <b>UTF-8</b>, the encoding almost the whole web uses, takes 1 byte for plain English letters and up to 4 for emoji.</p>
+      <input class="input" id="bit-text" maxlength="40" value="${esc(text)}" aria-label="Text to encode" placeholder="Type anything, try an emoji">
+      <div id="bit-chars"></div></div>`;
+    const draw = () => {
+      const chars = [...text], bytes = chars.reduce((a, c) => a + utf8(c).length, 0);
+      $("#bit-chars", box).innerHTML = `<p class="small muted" style="margin:10px 0">${chars.length} character${chars.length === 1 ? "" : "s"}, ${bytes} byte${bytes === 1 ? "" : "s"}${bytes > chars.length ? " (some characters need more than one byte)" : ""}</p>
+        <div class="bit-chars">${chars.map(c => { const bs = utf8(c); return `<div class="bit-char"><div class="bit-glyph">${c === " " ? "␣" : esc(c)}</div><div class="tiny muted mono">U+${c.codePointAt(0).toString(16).toUpperCase().padStart(4, "0")}</div>${bs.map(b => `<div class="bit-byte mono"><span>${bin(b)}</span><span class="muted">${hex(b)}</span></div>`).join("")}<div class="tiny">${bs.length} byte${bs.length === 1 ? "" : "s"}</div></div>`; }).join("")}</div>`;
+      if (chars.some(c => utf8(c).length === 4) && !B().emoji) { B().emoji = true; SA.save(); SA.checkBadges(); }
+    };
+    $("#bit-text", box).oninput = e => { text = e.target.value; draw(); };
+    draw();
+  }
+
+  const BASES = [["dec", "Decimal", 10, /^[0-9]+$/], ["bin", "Binary", 2, /^[01]+$/], ["hex", "Hexadecimal", 16, /^[0-9a-f]+$/i], ["oct", "Octal", 8, /^[0-7]+$/]];
+  let baseVal = 2026n;
+  function bases(box) {
+    const show = n => BASES.map(([k, , r]) => [k, n.toString(r).toUpperCase()]);
+    box.innerHTML = `<div class="glass-card av-stage"><p class="small" style="margin:0 0 12px">The same number written in different bases. We count in tens because we have ten fingers; computers count in twos. Hex is a short way to write binary: each hex digit is exactly 4 bits.</p>
+      <div class="bit-bases">${BASES.map(([k, l, r]) => `<label><span class="tiny muted">${l} (base ${r})</span><input class="input mono" data-base="${k}" spellcheck="false" autocomplete="off"></label>`).join("")}</div>
+      <p class="small muted" id="bit-bmsg" style="min-height:1.4em;margin:8px 0 0"></p><div id="bit-break"></div></div>`;
+    const fill = except => {
+      show(baseVal).forEach(([k, s]) => { const el = $(`[data-base="${k}"]`, box); if (k !== except) el.value = s; });
+      const b = baseVal.toString(2);
+      $("#bit-break", box).innerHTML = b.length <= 16 ? `<div class="eyebrow" style="margin-top:8px">How the binary adds up</div><div class="bit-places">${[...b].map((d, i) => { const p = 2n ** BigInt(b.length - 1 - i); return `<div class="${d === "1" ? "on" : ""}"><b class="mono">${d}</b><span class="tiny muted">${p}</span></div>`; }).join("")}</div><p class="small muted" style="margin:6px 0 0">${baseVal} = ${[...b].map((d, i) => d === "1" ? String(2n ** BigInt(b.length - 1 - i)) : null).filter(Boolean).join(" + ") || "0"}</p>` : `<p class="small muted">That one's too long to break down here: it needs ${b.length} bits.</p>`;
+    };
+    $$("[data-base]", box).forEach(el => el.oninput = () => {
+      const [, , r, re] = BASES.find(x => x[0] === el.dataset.base), s = el.value.trim().replace(/^0[xbo]/i, "");
+      const msg = $("#bit-bmsg", box);
+      if (!s) { msg.textContent = ""; return; }
+      if (!re.test(s)) { msg.textContent = `That isn't a valid base-${r} number. Allowed digits: ${{ 10: "0–9", 2: "0 and 1", 16: "0–9 and A–F", 8: "0–7" }[r]}.`; return; }
+      const v = [...s.toLowerCase()].reduce((a, c) => a * BigInt(r) + BigInt(parseInt(c, 16)), 0n);
+      if (v > 2n ** 64n) { msg.textContent = "That's bigger than 64 bits, more than most languages fit in one number!"; }
+      else msg.textContent = "";
+      baseVal = v; fill(el.dataset.base);
+    });
+    fill();
+  }
+
+  function view(v, tab) {
+    if (!TABS.some(t => t[0] === tab)) tab = "flip";
+    v.innerHTML = `<div class="view wide">${SA.ui.pageHead("Bits & Bytes Lab", "Underneath every program, picture and emoji there are just ones and zeros. Flip them yourself and see how computers really count.", `<a class="btn sm" href="#/workshop">${icon("grid")} Workshop</a>`, "Workshop")}
+      <div class="pick-row" style="margin-bottom:12px">${TABS.map(([k, l, em]) => `<a class="pick ${k === tab ? "on" : ""}" href="#/workshop/bits/${k}">${em} ${l}</a>`).join("")}</div>
+      <div class="stack bit-body" id="bit-body" style="gap:12px;max-width:900px"></div></div>`;
+    ({ flip, ops, text: textTab, bases })[tab]($("#bit-body", v));
+  }
+  SA.WS_TOOLS.bits = { order: 8, name: "Bits & Bytes Lab", em: "💡", blurb: "Flip the eight bits of a byte, hit target numbers, see emoji turn into bytes and convert between binary, hex and decimal.", view,
+    progress: () => `${B().targets || 0} targets hit · best streak ${B().best || 0}` };
+
+  SA.BADGES.push(
+    { id: "bits-20", em: "💡", name: "Binary brain", desc: "Hit 20 targets in the Bits & Bytes Lab.", test: () => (P().ws.bits.targets || 0) >= 20 },
+    { id: "bits-streak", em: "🔥", name: "Bit flipper", desc: "Hit 10 binary targets in a row without a hint.", test: () => (P().ws.bits.best || 0) >= 10 },
+    { id: "bits-emoji", em: "🧬", name: "Emoji anatomist", desc: "Look inside an emoji's bytes.", test: () => !!P().ws.bits.emoji }
+  );
+  SA.bitsState = () => ({ cur, target }); // for tests
+})();
+
+</script>
+<script>
 /* App shell: theme, layout, router, top bar, command palette, keyboard shortcuts, splash,
    onboarding and boot. Views live in js/views/*.js and register in SA.views. */
 (function () {
@@ -32160,7 +32721,7 @@ SA.ONLINE_CONFIG = { url: "https://erstexcypkidzvzjajod.supabase.co", key: "sb_p
     [["whats-new", "What's new", "spark"], ["about", "About Syntax Academy", "info"], ["lore", "The lore of the Cloud Lagoon", "book"], ["trophies", "Trophy room", "trophy"], ["stats", "Your stats", "layers"],
      ["study/review", "Review flashcards", "layers"], ["study/glossary", "Glossary", "book"], ["study/cheats", "Cheat sheets", "file"], ["study/notes", "Notes & bookmarks", "file"]].forEach(([r, l, ic]) => items.push({ t: l, s: "Page", ic, go: "#/" + r }));
     Object.entries(SA.WS_TOOLS || {}).forEach(([k, t]) => items.push({ t: t.name, s: "Workshop · " + t.blurb, ic: "wand", go: "#/workshop/" + k }));
-    [["algo/sort/bubble", "Bubble sort"], ["algo/sort/merge", "Merge sort"], ["algo/sort/quick", "Quicksort"], ["algo/sort/heap", "Heap sort"], ["algo/search/binary", "Binary search"], ["algo/path/astar", "A* pathfinding"], ["algo/path/dijkstra", "Dijkstra's algorithm"], ["algo/race", "Algorithm race"], ["regex/puzzles", "Regex puzzles"]].forEach(([r, l]) => items.push({ t: l, s: "Workshop", ic: "wand", go: "#/workshop/" + r }));
+    [["algo/sort/bubble", "Bubble sort"], ["algo/sort/merge", "Merge sort"], ["algo/sort/quick", "Quicksort"], ["algo/sort/heap", "Heap sort"], ["algo/search/binary", "Binary search"], ["algo/path/astar", "A* pathfinding"], ["algo/path/dijkstra", "Dijkstra's algorithm"], ["algo/race", "Algorithm race"], ["regex/puzzles", "Regex puzzles"], ["ds/stack", "Stack"], ["ds/queue", "Queue"], ["ds/list", "Linked list"], ["ds/bst", "Binary search tree"], ["ds/hash", "Hash table"], ["bits/bases", "Number base converter"], ["bits/text", "UTF-8 bytes"]].forEach(([r, l]) => items.push({ t: l, s: "Workshop", ic: "wand", go: "#/workshop/" + r }));
     (SA.SETTINGS_SECTIONS || []).forEach(([k, l, ic]) => items.push({ t: "Settings: " + l, s: "Settings", ic, go: "#/settings/" + k }));
     SA.LANGS.forEach(L => {
       items.push({ t: L.name, s: "Language · " + L.tagline, orb: L, go: "#/lang/" + L.id, k: L.short });
