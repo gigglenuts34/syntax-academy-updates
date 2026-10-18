@@ -1,14 +1,14 @@
 {
   "app": "syntax-academy",
-  "version": "1.3.1",
-  "file": "SyntaxAcademy-1.3.1.html",
-  "sha256": "50a9b412585ab99a75d9ac037468cb5d0cb8abd601a2d6d49ecbe8a519010fd4",
-  "size": 2296344,
-  "core": "core-1.3.1.py",
+  "version": "1.4.0",
+  "file": "SyntaxAcademy-1.4.0.html",
+  "sha256": "ec001125177c281b62f49d9d4c933b9551221b15b362a4664430918afe391baa",
+  "size": 2469035,
+  "core": "core-1.4.0.py",
   "core_sha256": "58123f211adeda1b5986272a64d5939032e34fbcc9616efc478734d8e62a270e",
   "core_size": 50382,
   "date": "2026-10-17",
   "notes": [
-    "Smooth as glass: steady 60 fps pages, 60 fps sky, smoother scrolling and faster page switches"
+    "Zero to pro: Python. New course stages (Meet, Thinking in, Advanced, Reading real code, Projects, Pro certification), 29 new Python lessons, checkpoint exams, output and bug-hunt questions, and the Daily warm-up with spaced repetition."
   ]
 }
