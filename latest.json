@@ -1,14 +1,14 @@
 {
   "app": "syntax-academy",
-  "version": "1.4.7",
-  "file": "SyntaxAcademy-1.4.7.html",
-  "sha256": "f5f5da0b5c74265ed040446b7478b60287a80fff0bbd2b6fce7a1b683ced724b",
-  "size": 4068693,
-  "core": "core-1.4.7.py",
+  "version": "1.4.8",
+  "file": "SyntaxAcademy-1.4.8.html",
+  "sha256": "419c66eb638e624001a4ef17be8848331cb021e3dd2f217f689bb0ec5453958d",
+  "size": 4449197,
+  "core": "core-1.4.8.py",
   "core_sha256": "58123f211adeda1b5986272a64d5939032e34fbcc9616efc478734d8e62a270e",
   "core_size": 50382,
   "date": "2026-10-18",
   "notes": [
-    "Zero to pro: Go (28 lessons, 4 projects, 230+ questions) and walkthrough fixes"
+    "Zero to pro: Rust"
   ]
 }
