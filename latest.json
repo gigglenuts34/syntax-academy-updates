@@ -1,14 +1,14 @@
 {
   "app": "syntax-academy",
-  "version": "1.4.5",
-  "file": "SyntaxAcademy-1.4.5.html",
-  "sha256": "46b81671f2123a3aedb6faab64927358a42c7befa9ef1bfd546a2d4ca5d20697",
-  "size": 3524355,
-  "core": "core-1.4.5.py",
+  "version": "1.4.6",
+  "file": "SyntaxAcademy-1.4.6.html",
+  "sha256": "6bae4cd26e6b0dfba466f70b9b261520d18bc71c40d7ab281b77f9166a9eec25",
+  "size": 3756411,
+  "core": "core-1.4.6.py",
   "core_sha256": "58123f211adeda1b5986272a64d5939032e34fbcc9616efc478734d8e62a270e",
   "core_size": 50382,
   "date": "2026-10-17",
   "notes": [
-    "Zero to pro: C++ - 28 new lessons, 4 projects, 230+ questions"
+    "Zero to pro: C - 28 new lessons, 4 projects, 230+ questions"
   ]
 }
