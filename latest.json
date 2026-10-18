@@ -1,14 +1,14 @@
 {
   "app": "syntax-academy",
-  "version": "1.4.2",
-  "file": "SyntaxAcademy-1.4.2.html",
-  "sha256": "69e107f015ae98ffb91a68ddd47904851d18a491d997bd924a413d65a9098255",
-  "size": 2808945,
-  "core": "core-1.4.2.py",
+  "version": "1.4.3",
+  "file": "SyntaxAcademy-1.4.3.html",
+  "sha256": "7419c17af8677ba5105bf29d3266fd88630d0798e964c460c10a0c2d14383f3d",
+  "size": 3051174,
+  "core": "core-1.4.3.py",
   "core_sha256": "58123f211adeda1b5986272a64d5939032e34fbcc9616efc478734d8e62a270e",
   "core_size": 50382,
   "date": "2026-10-17",
   "notes": [
-    "Zero to pro: TypeScript (25 new lessons, 4 projects, 200+ questions)"
+    "Zero to pro: Java (28 new lessons, 4 projects, 240 questions)"
   ]
 }
