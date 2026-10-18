@@ -1,14 +1,14 @@
 {
   "app": "syntax-academy",
-  "version": "1.4.1",
-  "file": "SyntaxAcademy-1.4.1.html",
-  "sha256": "5df3b4777f170633562b6e7a95863f942c7471ae96ea6b1bd9f303fbc879ed51",
-  "size": 2628279,
-  "core": "core-1.4.1.py",
+  "version": "1.4.2",
+  "file": "SyntaxAcademy-1.4.2.html",
+  "sha256": "69e107f015ae98ffb91a68ddd47904851d18a491d997bd924a413d65a9098255",
+  "size": 2808945,
+  "core": "core-1.4.2.py",
   "core_sha256": "58123f211adeda1b5986272a64d5939032e34fbcc9616efc478734d8e62a270e",
   "core_size": 50382,
   "date": "2026-10-17",
   "notes": [
-    "Zero to pro: JavaScript. 30 new JavaScript lessons (event loop, promises, closures, prototypes, iterators, testing...), code reading, 4 projects and 200+ questions."
+    "Zero to pro: TypeScript (25 new lessons, 4 projects, 200+ questions)"
   ]
 }
