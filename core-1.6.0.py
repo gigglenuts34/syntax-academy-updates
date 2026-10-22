@@ -92,7 +92,8 @@ SANDBOX_WORK, SANDBOX_CACHE = "/tmp/work", "/tmp/cache"
 LANGS = {
     "python": {"file": "main.py", "run": ["python3", "-u", "main.py"], "need": "python3", "pkgs": ["python"], "ver": ["python3", "--version"]},
     "javascript": {"file": "main.js", "run": ["node", "main.js"], "need": "node", "pkgs": ["nodejs"], "ver": ["node", "--version"]},
-    "typescript": {"file": "main.ts", "run": ["deno", "run", "--check", "--quiet", "--no-prompt", "--no-config", "main.ts"], "need": "deno", "pkgs": ["deno"],
+    # slow: Deno type-checks the whole program on every run, which can take several seconds on low-end laptops.
+    "typescript": {"file": "main.ts", "run": ["deno", "run", "--check", "--quiet", "--no-prompt", "--no-config", "main.ts"], "need": "deno", "pkgs": ["deno"], "slow": True,
                    "env": {"DENO_DIR": "{cache}", "DENO_NO_UPDATE_CHECK": "1", "NO_COLOR": "1"}, "ver": ["deno", "--version"],
                    "alt": {"file": "main.ts", "run": ["node", "--no-warnings", "main.ts"], "need": "node"}},
     "java": {"file": "Main.java", "run": ["java", "-Xss8m", "-XX:+UseSerialGC", "-XX:TieredStopAtLevel=1", "-Xshare:auto", "Main.java"], "need": "java", "pkgs": ["jdk-openjdk"], "ver": ["java", "--version"]},
@@ -225,8 +226,46 @@ def _sandbox_prefix(work, cache, env, net=False):
     return pre + bw + ["--"], True
 
 
-def _run_proc(argv, cwd, env, stdin, timeout, sandboxed):
-    """Runs one step with a time limit and an output cap. Returns a dict."""
+ANSI = re.compile(r"\x1b\[[0-9;?]*[ -/]*[@-~]|\x1b\][^\x07\x1b]*(\x07|\x1b\\)")
+
+
+def _waiting_for_input(root, pipe_ino):
+    """True when a process started by this run is blocked reading our (still open) stdin pipe, which means
+    the program has used up its input and is waiting for the user to type more."""
+    parents = {}
+    for d in os.listdir("/proc"):
+        if d.isdigit():
+            try:
+                with open(f"/proc/{d}/stat") as f:
+                    st = f.read()
+                parents[int(d)] = int(st[st.rindex(")") + 2:].split()[1])
+            except (OSError, ValueError, IndexError):
+                pass
+    tree, grew = {root}, True
+    while grew:
+        grew = False
+        for pid, ppid in parents.items():
+            if ppid in tree and pid not in tree:
+                tree.add(pid)
+                grew = True
+    ours = f"pipe:[{pipe_ino}]"
+    for pid in tree:
+        try:
+            for tid in os.listdir(f"/proc/{pid}/task"):
+                with open(f"/proc/{pid}/task/{tid}/syscall") as f:
+                    call = f.read().split()
+                # syscall 0 is read() on x86-64 (63 on arm64); its first argument is the file descriptor,
+                # which isn't always 0: .NET reads from a duplicate of stdin, for example.
+                if len(call) > 1 and call[0] in ("0", "63") and os.readlink(f"/proc/{pid}/fd/{int(call[1], 16)}") == ours:
+                    return True
+        except (OSError, ValueError):
+            pass
+    return False
+
+
+def _run_proc(argv, cwd, env, stdin, timeout, sandboxed, stop_on_wait=False):
+    """Runs one step with a time limit and an output cap. Returns a dict. With stop_on_wait, stdin stays
+    open after the given input, and the run stops (marked starved) as soon as the program waits for more."""
     t0 = time.time()
     try:
         p = subprocess.Popen(argv, cwd=cwd, env=None if sandboxed else env, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE, start_new_session=True)
@@ -249,24 +288,63 @@ def _run_proc(argv, cwd, env, stdin, timeout, sandboxed):
     threads = [threading.Thread(target=pump, args=(p.stdout, "stdout"), daemon=True), threading.Thread(target=pump, args=(p.stderr, "stderr"), daemon=True)]
     for t in threads:
         t.start()
+    starved = False
     try:
         p.stdin.write((stdin or "").encode())
-        p.stdin.close()
+        p.stdin.flush()
+        if not stop_on_wait:
+            p.stdin.close()
     except (BrokenPipeError, OSError):
         pass
     timed_out = False
     try:
-        p.wait(timeout=timeout)
+        if stop_on_wait:
+            ino = os.fstat(p.stdin.fileno()).st_ino
+            deadline = time.time() + timeout
+            while True:
+                try:
+                    p.wait(timeout=0.04)
+                    break
+                except subprocess.TimeoutExpired:
+                    if _waiting_for_input(p.pid, ino):
+                        starved = True
+                        time.sleep(0.05)  # let the last output reach our pipe
+                        _kill(p)
+                        p.wait()
+                        break
+                    if time.time() > deadline:
+                        raise
+        else:
+            p.wait(timeout=timeout)
     except subprocess.TimeoutExpired:
         timed_out = True
         _kill(p)
         p.wait()
+    finally:
+        if stop_on_wait:
+            try:
+                p.stdin.close()
+            except OSError:
+                pass
     for t in threads:
         t.join(2)
-    dec = lambda b: bytes(b[:OUT_CAP]).decode("utf-8", "replace").replace(SANDBOX_WORK + "/", "").replace(cwd + "/", "")
+    # Terminal colour codes mean nothing in the app's Output panel (some tools send them even with NO_COLOR).
+    dec = lambda b: ANSI.sub("", bytes(b[:OUT_CAP]).decode("utf-8", "replace")).replace(SANDBOX_WORK + "/", "").replace(cwd + "/", "")
     # JVM launchers announce option variables on every run; that's noise for learners.
     err = re.sub(r"^(NOTE: )?Picked up (_JAVA_OPTIONS|JAVA_TOOL_OPTIONS|JDK_JAVA_OPTIONS):.*\n?", "", dec(bufs["stderr"]), flags=re.M)
-    return {"code": p.returncode, "stdout": dec(bufs["stdout"]), "stderr": err, "ms": int((time.time() - t0) * 1000), "timedOut": timed_out, "truncated": state["truncated"]}
+    # Deno's advice after a type error ("re-run with --no-check") is for terminals, not for learners here.
+    err = re.sub(r"^\s*(info: The program failed type-checking, but it still might work correctly\.|hint: Re-run with --no-check to skip type-checking\.)\n?", "", err, flags=re.M)
+    out = dec(bufs["stdout"])
+    # `dotnet run` prints compiler warnings and errors on stdout, mixed into the program's own output, so a
+    # harmless warning (like CS8600 for an unchecked Console.ReadLine()) would make correct answers fail.
+    diags = DOTNET_DIAG.findall(out)
+    if diags:
+        out = DOTNET_DIAG.sub("", out)
+        err = "".join(diags) + err
+    res = {"code": p.returncode, "stdout": out, "stderr": err, "ms": int((time.time() - t0) * 1000), "timedOut": timed_out, "truncated": state["truncated"]}
+    if stop_on_wait:
+        res["starved"] = starved
+    return res
 
 
 def _kill(p):
@@ -313,6 +391,20 @@ def _build_template(cache):
     return tpl
 
 
+# Beginner TypeScript lessons read input with a browser-style prompt(): the next input line, or null when
+# there's none. Deno's own prompt() returns null whenever input is piped (as it is here), so this one
+# reads standard input itself. It works in Deno without permissions and in the Node fallback.
+DOTNET_DIAG = re.compile(r"^\S+\.(?:cs|fsx?)\(\d+,\d+\): (?:warning|error) [A-Z]+\d+: .*(?:\n|$)", re.M)
+STARVED_MARK = "\n[[no-more-input]]\n"  # the shim writes this to stderr when it runs out of input
+TS_PROMPT = 'const prompt = ((): ((q?: string) => string | null) => { let buf = "", eof = false; const g: any = globalThis, b = new Uint8Array(65536), d = new TextDecoder(); const rd = (): number => g.Deno ? (g.Deno.stdin.readSync(b) ?? 0) : g.process.getBuiltinModule("fs").readSync(0, b, 0, b.length, null); return (q?: string): string | null => { if (q) { if (g.Deno) g.Deno.stdout.writeSync(new TextEncoder().encode(q)); else g.process.stdout.write(q); } while (!eof && !buf.includes("\\n")) { const n = rd(); if (n) buf += d.decode(b.subarray(0, n), { stream: true }); else eof = true; } if (buf) { const i = buf.indexOf("\\n"), line = i < 0 ? buf : buf.slice(0, i); buf = i < 0 ? "" : buf.slice(i + 1); return line; } const m = "\\n[[no-more-input]]\\n"; if (g.Deno) g.Deno.stderr.writeSync(new TextEncoder().encode(m)); else g.process.stderr.write(m); return null; }; })();  '
+
+
+def _starved(res):
+    """Turns the prompt shim's out-of-input marker into a starved flag (the Output terminal then asks for more)."""
+    res["starved"] = bool(res.get("starved")) or STARVED_MARK in res.get("stderr", "")
+    res["stderr"] = res.get("stderr", "").replace(STARVED_MARK, "")
+
+
 def run_code(msg):
     """{lang, code, stdin, files?} → {ok, phase, code, stdout, stderr, ms, timedOut, sandboxed}"""
     lang = str(msg.get("lang", ""))
@@ -328,7 +420,18 @@ def run_code(msg):
         if tpl:
             shutil.copytree(tpl, work, dirs_exist_ok=True, symlinks=True)
         files = dict(msg.get("files") or {})
-        files[spec["file"]] = str(msg.get("code", ""))
+        code = str(msg.get("code", ""))
+        shimmed = lang == "typescript" and bool(re.search(r"\bprompt\s*\(", code))
+        # The Output terminal (stopStarved) stops a program at the first question nobody has answered yet.
+        # Only for languages that flush their output before reading: otherwise the question itself would
+        # be lost when the program is stopped. (Java's Scanner programs crash at the end of input instead.)
+        stop_on_wait = bool(msg.get("stopStarved")) and not msg.get("stdins") and (
+            lang in ("typescript", "csharp") or (lang == "java" and not re.search(r"Scanner|System\.in|BufferedReader", code))
+            # C++: reading cin flushes cout first (they're tied), so questions always get out. C stdio doesn't.
+            or (lang == "cpp" and not re.search(r"\b(scanf|printf|puts|getchar|fgets|putchar)\b", code)))
+        if shimmed:
+            code = TS_PROMPT + code  # same line, so error line numbers stay right
+        files[spec["file"]] = code
         for name, text in files.items():
             name = _safe_name(name)
             if not name:
@@ -361,7 +464,7 @@ def run_code(msg):
             try:
                 if lock:
                     fcntl.flock(lock, fcntl.LOCK_EX)
-                res = _run_proc(pre + cmd, work, {**os.environ, **env}, str(first_in or ""), limit, sandboxed)
+                res = _run_proc(pre + cmd, work, {**os.environ, **env}, str(first_in or ""), limit, sandboxed, stop_on_wait and phase == "run")
             finally:
                 if lock:
                     lock.close()
@@ -373,16 +476,20 @@ def run_code(msg):
                     out.update({"ok": False, "code": res["code"], "stderr": out["buildOutput"] or "The build failed.", "timedOut": res["timedOut"]})
                     return out
             else:
-                out.update({k: res[k] for k in ("code", "stdout", "stderr", "ms", "timedOut", "truncated")})
+                if shimmed:
+                    _starved(res)
+                out.update({k: res[k] for k in ("code", "stdout", "stderr", "ms", "timedOut", "truncated", "starved") if k in res})
                 out["ok"] = res["code"] == 0 and not res["timedOut"]
                 # Grading: build once, then run the same program against every test's input.
                 stdins = msg.get("stdins")
                 if isinstance(stdins, list) and stdins:
-                    runs = [{k: res[k] for k in ("code", "stdout", "stderr", "ms", "timedOut", "truncated")}]
+                    runs = [{k: res[k] for k in ("code", "stdout", "stderr", "ms", "timedOut", "truncated", "starved") if k in res}]
                     for extra in stdins[1:30]:
                         pre, _ = _sandbox_prefix(work, cache, env)
                         r2 = _run_proc(pre + cmd, work, {**os.environ, **env}, str(extra), limit, sandboxed)
-                        runs.append({k: r2[k] for k in ("code", "stdout", "stderr", "ms", "timedOut", "truncated")})
+                        if shimmed:
+                            _starved(r2)
+                        runs.append({k: r2[k] for k in ("code", "stdout", "stderr", "ms", "timedOut", "truncated", "starved") if k in r2})
                     out["runs"] = runs
         return out
     except Exception as e:  # never crash the window over a run
