@@ -229,6 +229,9 @@ def _sandbox_prefix(work, cache, env, net=False):
 ANSI = re.compile(r"\x1b\[[0-9;?]*[ -/]*[@-~]|\x1b\][^\x07\x1b]*(\x07|\x1b\\)")
 
 
+C_STDIO = re.compile(r"\b(scanf|printf|puts|getchar|fgets|putchar)\b")
+
+
 def _waiting_for_input(root, pipe_ino):
     """True when a process started by this run is blocked reading our (still open) stdin pipe, which means
     the program has used up its input and is waiting for the user to type more."""
@@ -426,9 +429,12 @@ def run_code(msg):
         # Only for languages that flush their output before reading: otherwise the question itself would
         # be lost when the program is stopped. (Java's Scanner programs crash at the end of input instead.)
         stop_on_wait = bool(msg.get("stopStarved")) and not msg.get("stdins") and (
-            lang in ("typescript", "csharp") or (lang == "java" and not re.search(r"Scanner|System\.in|BufferedReader", code))
-            # C++: reading cin flushes cout first (they're tied), so questions always get out. C stdio doesn't.
-            or (lang == "cpp" and not re.search(r"\b(scanf|printf|puts|getchar|fgets|putchar)\b", code)))
+            lang in ("typescript", "csharp", "go") or (lang == "java" and not re.search(r"Scanner|System\.in|BufferedReader", code))
+            # C++: reading cin flushes cout first (they're tied), so questions always get out.
+            # C's printf output waits in a buffer when it isn't going to a terminal, so C (and C++ using
+            # C's stdio) runs unbuffered here, through stdbuf.
+            or (lang == "cpp" and not C_STDIO.search(code))
+            or (lang in ("c", "cpp") and bool(shutil.which("stdbuf"))))
         if shimmed:
             code = TS_PROMPT + code  # same line, so error line numbers stay right
         files[spec["file"]] = code
@@ -464,6 +470,8 @@ def run_code(msg):
             try:
                 if lock:
                     fcntl.flock(lock, fcntl.LOCK_EX)
+                if stop_on_wait and phase == "run" and (lang == "c" or (lang == "cpp" and C_STDIO.search(code))):
+                    cmd = ["stdbuf", "-o0"] + cmd
                 res = _run_proc(pre + cmd, work, {**os.environ, **env}, str(first_in or ""), limit, sandboxed, stop_on_wait and phase == "run")
             finally:
                 if lock:
