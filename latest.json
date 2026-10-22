@@ -1,13 +1,13 @@
 {
   "app": "syntax-academy",
-  "version": "1.6.1",
-  "file": "SyntaxAcademy-1.6.1.html",
-  "sha256": "2d8de94d861fbfca5d726515b10d07b8254c9eb2abd1b7153b5117386875a5a1",
-  "size": 5227897,
-  "core": "core-1.6.1.py",
-  "core_sha256": "560f61ce1b3007da1726d51c4712412f80120772d03a9fe9aa4a78c8018747f9",
-  "core_size": 56750,
-  "date": "2026-10-21",
+  "version": "1.6.2",
+  "file": "SyntaxAcademy-1.6.2.html",
+  "sha256": "0487e4d0eea23fa802bc4c8b5ce3301ad26b329905a4fe145f137c117f3e15c9",
+  "size": 5370325,
+  "core": "core-1.6.2.py",
+  "core_sha256": "995f5298b2b25163ebc75c0277819a36aef3dd1d886b86d54875d6820d420400",
+  "core_size": 57164,
+  "date": "2026-10-22",
   "notes": [
     "Bug fixes and improvements"
   ]
