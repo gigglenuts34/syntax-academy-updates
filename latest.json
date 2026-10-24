@@ -1,14 +1,19 @@
 {
   "app": "syntax-academy",
-  "version": "1.8.8",
-  "file": "SyntaxAcademy-1.8.8.html",
-  "sha256": "c7451089e34534e0fc022f5c2ae8611f64b31b829c98c6ebe5ad9b59e6544424",
-  "size": 6231942,
-  "core": "core-1.8.8.py",
-  "core_sha256": "04a5b20c8a0f34890f6a5df246299a7b374a33861cde08e38aa0bd81188b3c3f",
-  "core_size": 97804,
-  "date": "2026-10-22",
+  "version": "1.9.0",
+  "file": "SyntaxAcademy-1.9.0.html",
+  "sha256": "919df63af1fe1ea3f5be1828fe9bf639e47c82de7e5c549b83cac1729aafbb04",
+  "size": 7078223,
+  "core": "core-1.9.0.py",
+  "core_sha256": "022f4f71ce68b96669ac46ea801e90315bb01992d32e60842b9fcd09dd22e285",
+  "core_size": 201085,
+  "date": "2026-10-24",
   "notes": [
-    "Bug fixes and improvements"
+    "New course: Electronics & Microcontrollers, written for the Elegoo MEGA 2560 starter kit: 84 lessons from \"what is electricity\" to registers, interrupts and plain AVR C",
+    "Every build lesson has a checked wiring diagram with a pin-by-pin table, the full sketch, what you should see, troubleshooting, challenges and a quiz, plus a \"tested on real hardware\" box to tick",
+    "Seven capstone projects with your kit: parking sensor, motion alarm, plant water monitor, IR remote fan, weather station, tilt maze game and an RFID door lock",
+    "The simulator now runs Mega sketches with the kit's parts: shift registers, 7-segment and matrix displays, the LCD, the real-time clock, the motion sensor, RFID cards, the IR remote, the keypad and more",
+    "New in the Workshop: the Electronics Bench, with calculators for LED resistors, Ohm's law, resistor colour codes and voltage dividers using your kit's resistors",
+    "New in the Workshop: My Parts. Tick the parts you own and see which lessons and projects you can build right now"
   ]
 }
