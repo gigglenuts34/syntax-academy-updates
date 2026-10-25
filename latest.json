@@ -1,19 +1,16 @@
 {
   "app": "syntax-academy",
-  "version": "1.10.0",
-  "file": "SyntaxAcademy-1.10.0.html",
-  "sha256": "fede71d68f5913221501c21d9b6622f0a132ff7afed8734e925b4e17563534eb",
-  "size": 7690332,
-  "core": "core-1.10.0.py",
-  "core_sha256": "a284787624b30f0478f21dc8441dd4e083d0c9801e1c5ab0851cd1e725222905",
-  "core_size": 201482,
+  "version": "1.11.0",
+  "file": "SyntaxAcademy-1.11.0.html",
+  "sha256": "d76eafe255b7f95885294ffdbfacf2803546c8f79c5f4f5f05d7bc6b520051a1",
+  "size": 7915601,
+  "core": "core-1.11.0.py",
+  "core_sha256": "30f17b5c15cb93bfbeed4e3dd72650c8ec38d1d4118fe4afe3fa02ea69c0d8c8",
+  "core_size": 201520,
   "date": "2026-10-25",
   "notes": [
-    "Python, JavaScript and TypeScript rebuilt from beginner to professional, each with a new \"Working like a pro\" unit: project setup, linting, testing, CI, web servers, packaging and more",
-    "JavaScript: 18 new lessons, including debugging, metaprogramming, streams, workers, security pitfalls and WebAssembly; every lesson now uses ES modules",
-    "TypeScript: 14 new lessons, including reading type errors, decorators, variance, declaration files, typed routers and React-style reducers; targets TypeScript 6 and 7",
-    "Every exercise in these courses has tests proven to reject common wrong answers, every lesson has a \"Common mistakes\" note, and capstone projects show milestones as you go",
-    "Each course page now says which language version it teaches",
-    "Fixes: C# and Clojure programs now run (they download what they need once, then work offline), outdated examples in Zig, Ruby, PHP and F#, and beginner hints that weren't true in every language"
+    "Java rebuilt from beginner to professional for Java 25: 17 new lessons and a \"Working like a pro\" unit (Maven and Gradle, linters, JUnit, CI, dependency injection, web servers, logging, packaging)",
+    "New Java lessons on files, dates and time zones, annotations and reflection, modules, the memory model, CompletableFuture, secure deserialization, calling C with the FFM API and profiling with JFR",
+    "Every Java exercise has tests proven to reject common wrong answers, and every lesson has a \"Common mistakes\" note"
   ]
 }

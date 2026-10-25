@@ -125,7 +125,7 @@ LANGS = {
     "typescript": {"file": "main.ts", "run": ["deno", "run", "--check", "--quiet", "--no-prompt", "--no-config", "main.ts"], "need": "deno", "pkgs": ["deno"], "slow": True,
                    "env": {"DENO_DIR": "{cache}", "DENO_NO_UPDATE_CHECK": "1", "NO_COLOR": "1"}, "ver": ["deno", "--version"],
                    "alt": {"file": "main.ts", "run": ["node", "--no-warnings", "main.ts"], "need": "node"}},
-    "java": {"file": "Main.java", "run": ["java", "-Xss8m", "-XX:+UseSerialGC", "-XX:TieredStopAtLevel=1", "-Xshare:auto", "Main.java"], "need": "java", "pkgs": ["jdk-openjdk"], "ver": ["java", "--version"]},
+    "java": {"file": "Main.java", "run": ["java", "--enable-native-access=ALL-UNNAMED", "-Xss8m", "-XX:+UseSerialGC", "-XX:TieredStopAtLevel=1", "-Xshare:auto", "Main.java"], "need": "java", "pkgs": ["jdk-openjdk"], "ver": ["java", "--version"]},
     "kotlin": {"file": "main.kt", "build": ["kotlinc", "-nowarn", "main.kt", "-include-runtime", "-d", "main.jar"], "run": ["java", "-Xss8m", "-XX:+UseSerialGC", "-jar", "main.jar"],
                "need": "kotlinc", "pkgs": ["kotlin", "jdk-openjdk"], "ver": ["kotlinc", "-version"], "slow": True},
     "c": {"file": "main.c", "build": ["gcc", "-std=c17", "-O1", "-Wall", "-fdiagnostics-color=never", "-o", "main", "main.c", "-lm"], "run": ["./main"], "need": "gcc", "pkgs": ["gcc"], "ver": ["gcc", "--version"]},
@@ -134,7 +134,8 @@ LANGS = {
     "electronics": {"file": "sketch.ino", "build": ["g++", "-std=gnu++17", "-O1", "-Wall", "-fdiagnostics-color=never", "-DSA_MEGA", "-fsingle-precision-constant", "-I.", "-include", "Arduino.h", "-x", "c++", "-o", "main", "sketch.ino"], "run": ["./main"], "need": "g++", "pkgs": ["gcc"], "ver": ["g++", "--version"]},
     "cpp": {"file": "main.cpp", "build": ["g++", "-std=c++20", "-O1", "-Wall", "-fdiagnostics-color=never", "-o", "main", "main.cpp"], "run": ["./main"], "need": "g++", "pkgs": ["gcc"], "ver": ["g++", "--version"]},
     "csharp": {"file": "main.cs", "run": ["dotnet", "run", "main.cs"], "need": "dotnet", "pkgs": ["dotnet-sdk"], "slow": True,
-               "env": {"DOTNET_CLI_HOME": "{cache}", "NUGET_PACKAGES": "{cache}/nuget", "DOTNET_NOLOGO": "1", "DOTNET_CLI_TELEMETRY_OPTOUT": "1", "DOTNET_SKIP_FIRST_TIME_EXPERIENCE": "1"}, "ver": ["dotnet", "--version"]},
+               "env": {"DOTNET_CLI_HOME": "{cache}", "NUGET_PACKAGES": "{cache}/nuget", "DOTNET_NOLOGO": "1", "DOTNET_CLI_TELEMETRY_OPTOUT": "1", "DOTNET_SKIP_FIRST_TIME_EXPERIENCE": "1"}, "ver": ["dotnet", "--version"],
+               "net_until": "nuget/microsoft.dotnet.ilcompiler"},
     "fsharp": {"file": "main.fsx", "run": ["dotnet", "fsi", "--quiet", "--nologo", "main.fsx"], "need": "dotnet", "pkgs": ["dotnet-sdk"], "slow": True,
                "env": {"DOTNET_CLI_HOME": "{cache}", "NUGET_PACKAGES": "{cache}/nuget", "DOTNET_NOLOGO": "1", "DOTNET_CLI_TELEMETRY_OPTOUT": "1"}, "ver": ["dotnet", "--version"]},
     "go": {"file": "main.go", "run": ["go", "run", "main.go"], "need": "go", "pkgs": ["go"], "env": {"GOCACHE": "{cache}/build", "GOPATH": "{cache}/path", "GOFLAGS": "-mod=mod", "GOTOOLCHAIN": "local", "GO111MODULE": "off"}, "ver": ["go", "version"], "slow": True},
@@ -151,7 +152,9 @@ LANGS = {
     "elixir": {"file": "main.exs", "run": ["elixir", "main.exs"], "need": "elixir", "pkgs": ["elixir"], "ver": ["elixir", "--short-version"]},
     "erlang": {"file": "main.erl", "run": ["escript", "main.erl"], "need": "escript", "pkgs": ["erlang-core"], "ver": ["erl", "-noshell", "-eval", "io:format(\"Erlang/OTP ~s\", [erlang:system_info(otp_release)]), halt()."]},
     "gleam": {"file": "src/main.gleam", "run": ["gleam", "run", "--no-print-progress"], "need": "gleam", "pkgs": ["gleam", "erlang-core"], "ver": ["gleam", "--version"], "template": "gleam"},
-    "clojure": {"file": "main.clj", "run": ["clojure", "-M", "main.clj"], "need": "clojure", "pkgs": ["clojure", "jdk-openjdk"], "env": {"CLJ_CONFIG": "{cache}/config", "CLJ_CACHE": "{cache}/cpcache"}, "ver": ["clojure", "--version"], "slow": True, "mvn": True},
+    # Maven's local repository goes in the cache: the sandbox's HOME is thrown away after every run.
+    "clojure": {"file": "main.clj", "run": ["clojure", "-Sdeps", '{:mvn/local-repo "{cache}/m2"}', "-M", "main.clj"], "need": "clojure", "pkgs": ["clojure", "jdk-openjdk"],
+                "env": {"CLJ_CONFIG": "{cache}/config", "CLJ_CACHE": "{cache}/cpcache"}, "ver": ["clojure", "--version"], "slow": True, "net_until": "m2/org/clojure/clojure"},
     "commonlisp": {"file": "main.lisp", "run": ["sbcl", "--script", "main.lisp"], "need": "sbcl", "pkgs": ["sbcl"], "ver": ["sbcl", "--version"]},
     "scheme": {"file": "main.scm", "run": ["guile", "--no-auto-compile", "-s", "main.scm"], "need": "guile", "pkgs": ["guile"], "ver": ["guile", "--version"]},
     "racket": {"file": "main.rkt", "run": ["racket", "main.rkt"], "need": "racket", "pkgs": ["racket"], "ver": ["racket", "--version"]},
@@ -596,8 +599,9 @@ def run_code(msg):
         out = {"ok": True, "phase": "run", "code": 0, "stdout": "", "stderr": "", "ms": 0, "buildMs": 0, "timedOut": False}
         for phase, cmd in steps:
             cmd = [c.replace("{cache}", cdir) for c in cmd]
-            # Clojure fetches its own libraries from Maven the first time it runs.
-            net = bool(spec.get("mvn")) and not os.path.isdir(os.path.join(cache, "cpcache"))
+            # Some toolchains download what they need the first time (Clojure from Maven, C# its compiler packs
+            # from NuGet): they get the network until the file named by net_until is in their cache.
+            net = bool(spec.get("net_until")) and not os.path.exists(os.path.join(cache, spec["net_until"]))
             pre, sandboxed = _sandbox_prefix(work, cache, env, net=net)
             limit = (180 if spec.get("slow") else 60) if phase == "build" else float(msg.get("timeout") or 10) + (20 if spec.get("slow") else 0)
             first_in = (msg.get("stdins") or [msg.get("stdin", "")])[0] if phase == "run" else ""
