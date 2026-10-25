@@ -1,19 +1,19 @@
 {
   "app": "syntax-academy",
-  "version": "1.9.0",
-  "file": "SyntaxAcademy-1.9.0.html",
-  "sha256": "919df63af1fe1ea3f5be1828fe9bf639e47c82de7e5c549b83cac1729aafbb04",
-  "size": 7078223,
-  "core": "core-1.9.0.py",
-  "core_sha256": "022f4f71ce68b96669ac46ea801e90315bb01992d32e60842b9fcd09dd22e285",
-  "core_size": 201085,
-  "date": "2026-10-24",
+  "version": "1.10.0",
+  "file": "SyntaxAcademy-1.10.0.html",
+  "sha256": "fede71d68f5913221501c21d9b6622f0a132ff7afed8734e925b4e17563534eb",
+  "size": 7690332,
+  "core": "core-1.10.0.py",
+  "core_sha256": "a284787624b30f0478f21dc8441dd4e083d0c9801e1c5ab0851cd1e725222905",
+  "core_size": 201482,
+  "date": "2026-10-25",
   "notes": [
-    "New course: Electronics & Microcontrollers, written for the Elegoo MEGA 2560 starter kit: 84 lessons from \"what is electricity\" to registers, interrupts and plain AVR C",
-    "Every build lesson has a checked wiring diagram with a pin-by-pin table, the full sketch, what you should see, troubleshooting, challenges and a quiz, plus a \"tested on real hardware\" box to tick",
-    "Seven capstone projects with your kit: parking sensor, motion alarm, plant water monitor, IR remote fan, weather station, tilt maze game and an RFID door lock",
-    "The simulator now runs Mega sketches with the kit's parts: shift registers, 7-segment and matrix displays, the LCD, the real-time clock, the motion sensor, RFID cards, the IR remote, the keypad and more",
-    "New in the Workshop: the Electronics Bench, with calculators for LED resistors, Ohm's law, resistor colour codes and voltage dividers using your kit's resistors",
-    "New in the Workshop: My Parts. Tick the parts you own and see which lessons and projects you can build right now"
+    "Python, JavaScript and TypeScript rebuilt from beginner to professional, each with a new \"Working like a pro\" unit: project setup, linting, testing, CI, web servers, packaging and more",
+    "JavaScript: 18 new lessons, including debugging, metaprogramming, streams, workers, security pitfalls and WebAssembly; every lesson now uses ES modules",
+    "TypeScript: 14 new lessons, including reading type errors, decorators, variance, declaration files, typed routers and React-style reducers; targets TypeScript 6 and 7",
+    "Every exercise in these courses has tests proven to reject common wrong answers, every lesson has a \"Common mistakes\" note, and capstone projects show milestones as you go",
+    "Each course page now says which language version it teaches",
+    "Fixes: C# and Clojure programs now run (they download what they need once, then work offline), outdated examples in Zig, Ruby, PHP and F#, and beginner hints that weren't true in every language"
   ]
 }
