@@ -7,6 +7,7 @@ import hashlib
 import json
 import os
 import re
+import secrets
 import shutil
 import subprocess
 import sys
@@ -41,8 +42,23 @@ STATE_FILE = os.path.join(DATA_DIR, "state.json")
 WINDOW_FILE = os.path.join(DATA_DIR, "window.json")
 # Written when GPU drawing froze on this computer: that version then starts in safe graphics.
 GFX_FALLBACK_FILE = os.path.join(DATA_DIR, "gfx-fallback.json")
-# The page may only reach the optional AI providers: Claude's API or a local Ollama.
-HTTP_HOSTS = {"api.anthropic.com", "localhost", "127.0.0.1", "::1"}
+# The page may only reach the optional AI providers: Claude's Messages API, or the chat endpoint of an
+# Ollama on this computer. Nothing else, so the bridge can't be used to poke at other local services.
+HTTP_LOCAL = {"localhost", "127.0.0.1", "::1"}
+HTTP_HEADERS = {"content-type", "x-api-key", "anthropic-version", "anthropic-dangerous-direct-browser-access", "anthropic-beta"}
+
+
+def http_allowed(url):
+    try:
+        u = urllib.parse.urlparse(url)
+        port = u.port
+    except ValueError:
+        return False
+    if u.username or u.password or u.query or u.fragment:
+        return False
+    if u.scheme == "https" and u.hostname == "api.anthropic.com" and port in (None, 443):
+        return u.path == "/v1/messages"
+    return u.scheme == "http" and u.hostname in HTTP_LOCAL and u.path == "/api/chat"
 UPDATE_DIR = os.path.join(DATA_DIR, "updates")
 CURRENT_FILE = os.path.join(UPDATE_DIR, "current.json")
 CHECK_FILE = os.path.join(UPDATE_DIR, "last-check.json")
@@ -62,10 +78,12 @@ def read_json(path, fallback):
 
 
 def write_json(path, data):
-    os.makedirs(os.path.dirname(path), exist_ok=True)
+    """Writes atomically, readable only by you: the state holds the AI key and the online sign-in."""
+    os.makedirs(os.path.dirname(path), mode=0o700, exist_ok=True)
     tmp = path + ".tmp"
-    with open(tmp, "w", encoding="utf-8") as f:
+    with open(os.open(tmp, os.O_WRONLY | os.O_CREAT | os.O_TRUNC, 0o600), "w", encoding="utf-8") as f:
         json.dump(data, f)
+    os.chmod(tmp, 0o600)  # in case an older version left the file readable by others
     os.replace(tmp, path)
 
 
@@ -125,7 +143,7 @@ LANGS = {
     "typescript": {"file": "main.ts", "run": ["deno", "run", "--check", "--quiet", "--no-prompt", "--no-config", "main.ts"], "need": "deno", "pkgs": ["deno"], "slow": True,
                    "env": {"DENO_DIR": "{cache}", "DENO_NO_UPDATE_CHECK": "1", "NO_COLOR": "1"}, "ver": ["deno", "--version"],
                    "alt": {"file": "main.ts", "run": ["node", "--no-warnings", "main.ts"], "need": "node"}},
-    "java": {"file": "Main.java", "run": ["java", "-Xss8m", "-XX:+UseSerialGC", "-XX:TieredStopAtLevel=1", "-Xshare:auto", "Main.java"], "need": "java", "pkgs": ["jdk-openjdk"], "ver": ["java", "--version"]},
+    "java": {"file": "Main.java", "run": ["java", "--enable-native-access=ALL-UNNAMED", "-Xss8m", "-XX:+UseSerialGC", "-XX:TieredStopAtLevel=1", "-Xshare:auto", "Main.java"], "need": "java", "pkgs": ["jdk-openjdk"], "ver": ["java", "--version"]},
     "kotlin": {"file": "main.kt", "build": ["kotlinc", "-nowarn", "main.kt", "-include-runtime", "-d", "main.jar"], "run": ["java", "-Xss8m", "-XX:+UseSerialGC", "-jar", "main.jar"],
                "need": "kotlinc", "pkgs": ["kotlin", "jdk-openjdk"], "ver": ["kotlinc", "-version"], "slow": True},
     "c": {"file": "main.c", "build": ["gcc", "-std=c17", "-O1", "-Wall", "-fdiagnostics-color=never", "-o", "main", "main.c", "-lm"], "run": ["./main"], "need": "gcc", "pkgs": ["gcc"], "ver": ["gcc", "--version"]},
@@ -254,6 +272,9 @@ def _sandbox_prefix(work, cache, env, net=False):
     bw = ["bwrap", "--ro-bind", "/", "/", "--dev", "/dev", "--proc", "/proc", "--tmpfs", "/tmp", "--tmpfs", "/home", "--tmpfs", "/run", "--tmpfs", "/var/tmp",
           "--bind", work, SANDBOX_WORK, "--bind", cache, SANDBOX_CACHE, "--chdir", SANDBOX_WORK,
           "--unshare-all", "--die-with-parent", "--new-session", "--clearenv"]
+    for private in ("/mnt", "/media", "/srv"):  # other drives and shares: your files, like /home
+        if os.path.isdir(private):
+            bw += ["--tmpfs", private]
     if net:
         bw.append("--share-net")
     for k, v in env.items():
@@ -678,6 +699,30 @@ def install_langs(lang):
         _install_lock.release()
 
 
+def bridge_message(raw, token):
+    """A message from the page as a dict, or None if it isn't from the app's own page: every frame can post
+    to the bridge (learners' HTML pages too), but only the top page was given the token."""
+    try:
+        msg = json.loads(raw)
+    except (TypeError, ValueError):
+        return None
+    if not isinstance(msg, dict) or not token or not secrets.compare_digest(str(msg.get("t", "")).encode(), token.encode()):
+        return None
+    return msg
+
+
+def save_path(folder, name):
+    """Where to save a file the page offers: a plain name in folder, never hidden, never an existing file."""
+    name = re.sub(r"[^\w .()+-]", "_", os.path.basename(str(name or "").replace("\\", "/"))).strip(" .") or "syntax-academy-file.txt"
+    stem, ext = os.path.splitext(name)
+    stem, ext = stem[:100] or "file", ext[:20]
+    path, n = os.path.join(folder, stem + ext), 1
+    while os.path.lexists(path):
+        n += 1
+        path = os.path.join(folder, "%s (%d)%s" % (stem, n, ext))
+    return path
+
+
 def feed_allowed(url):
     u = urllib.parse.urlparse(url)
     if u.scheme == "https":
@@ -777,6 +822,14 @@ RUNNING_CORE_SHA = _running_core_sha()
 
 def main_gui():
     global SAFE_GFX
+    # Your data folder holds the AI key, the online sign-in and the browser storage: yours alone.
+    os.makedirs(DATA_DIR, mode=0o700, exist_ok=True)
+    try:
+        os.chmod(DATA_DIR, 0o700)
+        if os.path.exists(STATE_FILE):
+            os.chmod(STATE_FILE, 0o600)
+    except OSError:
+        pass
     if not SAFE_GFX and read_json(GFX_FALLBACK_FILE, {}).get("version") == ((downloaded_update() or {}).get("version") or UPDATE_CONF.get("version", "")):
         SAFE_GFX = True
         os.environ.setdefault("WEBKIT_DISABLE_DMABUF_RENDERER", "1")
@@ -886,8 +939,15 @@ def main_gui():
 
             manager = WebKit2.WebsiteDataManager(base_data_directory=os.path.join(DATA_DIR, "web"), base_cache_directory=os.path.join(CACHE_DIR, "web"))
             context = WebKit2.WebContext.new_with_website_data_manager(manager)
+            # Learners' HTML pages are shown from sa-preview:, an origin of their own: they can run their
+            # scripts without the app's Content-Security-Policy, and can't reach into the app.
+            self.previews = {}
+            context.register_uri_scheme("sa-preview", self.serve_preview)
             ucm = WebKit2.UserContentManager()
             self.ucm = ucm
+            # Every frame can post to the bridge, including learners' pages and anything injected into one.
+            # Only the app's own page knows this secret (given to the top frame alone), so only it is obeyed.
+            self.token = secrets.token_hex(24)
             self.update_state = {"state": "idle"}
             self.notif_routes = {}
             on_notification_click(self.on_notification_click)
@@ -897,7 +957,9 @@ def main_gui():
             self.view = WebKit2.WebView(web_context=context, user_content_manager=ucm)
             settings = self.view.get_settings()
             settings.set_enable_developer_extras(DEBUG)
-            settings.set_allow_file_access_from_file_urls(True)
+            settings.set_allow_file_access_from_file_urls(False)  # the page never reads local files
+            settings.set_allow_universal_access_from_file_urls(False)
+            settings.set_javascript_can_open_windows_automatically(False)
             settings.set_enable_smooth_scrolling(True)
             for name, val in (("set_enable_webgl", True), ("set_enable_write_console_messages_to_stdout", DEBUG)):
                 try:
@@ -925,10 +987,11 @@ def main_gui():
             self.running = upd["version"] if upd else UPDATE_CONF.get("version", "")
             info = {"running": self.running, "bundled": UPDATE_CONF.get("version", ""), "fromUpdate": bool(upd), "feed": bool(self.feed()), "signed": bool(UPDATE_CONF.get("pubkey"))}
             gfx = "safe" if SAFE_GFX or os.environ.get("WEBKIT_DISABLE_DMABUF_RENDERER") == "1" else "gpu"
-            boot = "window.__SA_FRAMES__=0;requestAnimationFrame(function t(){__SA_FRAMES__++;requestAnimationFrame(t)});window.__SA_NATIVE__=true;window.__SA_STATE__=%s;window.__SA_UPDATE__=%s;window.__SA_GFX__=%s;window.__SA_GPU__=%s;" % (json.dumps(read_json(STATE_FILE, None)), json.dumps(info), json.dumps(gfx), json.dumps(gpu_name()))
+            boot = "window.__SA_FRAMES__=0;requestAnimationFrame(function t(){__SA_FRAMES__++;requestAnimationFrame(t)});window.__SA_NATIVE__=true;window.__SA_BRIDGE__=%s;window.__SA_STATE__=%s;window.__SA_UPDATE__=%s;window.__SA_GFX__=%s;window.__SA_GPU__=%s;" % (json.dumps(self.token), json.dumps(read_json(STATE_FILE, None)), json.dumps(info), json.dumps(gfx), json.dumps(gpu_name()))
             self.ucm.remove_all_scripts()
             self.ucm.add_script(WebKit2.UserScript.new(boot, WebKit2.UserContentInjectedFrames.TOP_FRAME, WebKit2.UserScriptInjectionTime.START, None, None))
             uri = GLib.filename_to_uri(index, None)
+            self.app_uri = uri
             if route and re.fullmatch(r"#/[\w./%-]*", route):
                 uri += route
             self.view.load_uri(uri)
@@ -1034,9 +1097,11 @@ def main_gui():
 
         def on_message(self, _ucm, result):
             try:
-                msg = json.loads(result.get_js_value().to_string())
-            except (ValueError, AttributeError):
+                msg = bridge_message(result.get_js_value().to_string(), self.token)
+            except AttributeError:
                 return
+            if msg is None:
+                return  # not from the app's own page
             kind, rid = msg.get("type"), msg.get("id")
             if kind == "save":
                 write_json(STATE_FILE, msg.get("state"))
@@ -1064,6 +1129,21 @@ def main_gui():
                 self.reply(rid, {"ok": bool(nid)})
             elif kind == "reminder":
                 self.reply(rid, set_reminder(bool(msg.get("on")), msg.get("hour", 19)))
+            elif kind == "preview":
+                self.reply(rid, {"url": self.add_preview(str(msg.get("html", "")))})
+
+        def add_preview(self, html):
+            pid = secrets.token_hex(12)
+            self.previews[pid] = html
+            while len(self.previews) > 24:  # oldest first: dicts keep insertion order
+                self.previews.pop(next(iter(self.previews)))
+            return "sa-preview://page/" + pid
+
+        def serve_preview(self, req):
+            data = self.previews.get(req.get_path().strip("/"), "").encode("utf-8")
+            resp = WebKit2.URISchemeResponse.new(Gio.MemoryInputStream.new_from_bytes(GLib.Bytes.new(data)), len(data))
+            resp.set_content_type("text/html; charset=utf-8")
+            req.finish_with_response(resp)
 
         def on_notification_click(self, nid, _key):
             if nid not in self.notif_routes:
@@ -1073,10 +1153,9 @@ def main_gui():
             self.js("SA.ui && SA.ui.go(%s)" % json.dumps(route))
 
         def save_file(self, msg):
-            name = os.path.basename(msg.get("name") or "syntax-academy-file.txt")
             folder = special_dir(msg.get("dir", ""))
             os.makedirs(folder, exist_ok=True)
-            path = os.path.join(folder, name)
+            path = save_path(folder, msg.get("name"))
             if "b64" in msg:
                 with open(path, "wb") as f:
                     f.write(base64.b64decode(msg["b64"]))
@@ -1086,10 +1165,11 @@ def main_gui():
             return path.replace(os.path.expanduser("~"), "~", 1)
 
         def http(self, msg):
-            url = msg.get("url", "")
-            if urllib.parse.urlparse(url).hostname not in HTTP_HOSTS:
-                return {"status": 0, "text": "blocked host"}
-            req = urllib.request.Request(url, data=(msg.get("body") or "").encode(), method="POST", headers=msg.get("headers") or {})
+            url = str(msg.get("url", ""))
+            if not http_allowed(url):
+                return {"status": 0, "text": "blocked address"}
+            headers = {str(k): str(v) for k, v in (msg.get("headers") or {}).items() if str(k).lower() in HTTP_HEADERS}
+            req = urllib.request.Request(url, data=str(msg.get("body") or "").encode(), method="POST", headers=headers)
             try:
                 with urllib.request.urlopen(req, timeout=180) as r:
                     return {"status": r.status, "text": r.read().decode("utf-8", "replace")}
@@ -1111,9 +1191,17 @@ def main_gui():
 
         def on_policy(self, _view, decision, kind):
             if kind in (WebKit2.PolicyDecisionType.NAVIGATION_ACTION, WebKit2.PolicyDecisionType.NEW_WINDOW_ACTION):
-                uri = decision.get_navigation_action().get_request().get_uri()
+                action = decision.get_navigation_action()
+                uri = action.get_request().get_uri()
                 if uri.startswith(("http://", "https://")):
-                    self.open_external(uri)
+                    if action.is_user_gesture():  # a click, not a page sending itself somewhere
+                        self.open_external(uri)
+                    decision.ignore()
+                    return True
+                # The window only ever shows the app itself. Frames may also hold learners' pages (previews,
+                # srcdoc, blob:) and blank pages; nothing may open another window or a local file.
+                if kind == WebKit2.PolicyDecisionType.NEW_WINDOW_ACTION or not (
+                        uri.split("#", 1)[0] == getattr(self, "app_uri", None) or uri.startswith(("sa-preview:", "blob:", "data:", "about:"))):
                     decision.ignore()
                     return True
             return False
