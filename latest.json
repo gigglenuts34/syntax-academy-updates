@@ -1,17 +1,22 @@
 {
   "app": "syntax-academy",
-  "version": "1.12.0",
-  "file": "SyntaxAcademy-1.12.0.html",
-  "sha256": "de9169bc2345f351e62358c740ea2e042dcb080edf8e629316ce32414be60515",
-  "size": 8297400,
-  "core": "core-1.12.0.py",
-  "core_sha256": "b5f5cfcaf4ebb535f3a8c879af306dc1ce7f7609184a45038aec868947fc7f35",
-  "core_size": 206297,
-  "date": "2026-10-29",
+  "version": "1.13.0",
+  "file": "SyntaxAcademy-1.13.0.html",
+  "sha256": "cd894cd222a820f85c600f96b4dbcfa68dcfd7f3851d09c9dae057fef410ff1d",
+  "size": 9193854,
+  "core": "core-1.13.0.py",
+  "core_sha256": "cd1031ff2bdd43e89ebc4ebb1d1d9c206ad4dc46f65f43ba429d7d03222379c7",
+  "core_size": 422324,
+  "date": "2026-10-31",
   "notes": [
-    "C# rebuilt from beginner to professional for C# 14 on .NET 10: 21 new lessons and a \"Working like a pro\" unit (projects and MSBuild, NuGet, analyzers, xUnit, CI, web APIs, EF Core, logging, configuration, publishing)",
-    "New C# lessons on files, time zones, C# 13 and 14 features, Span<T>, attributes, source generators, calling C, channels, threads and deadlocks, secure coding, and async streams",
-    "Safer online play: other players' names, profiles, chat and duel messages can never run code in your app, and the app only runs its own scripts",
-    "Every C# exercise has tests proven to reject common wrong answers, and every lesson has a \"Common mistakes\" note"
+    "Go rebuilt from beginner to professional for Go 1.27: 19 new lessons and a \"Working like a pro\" unit (modules, project layout, go vet, CI, slog, flags, shipping binaries)",
+    "New Go lessons on files with os.Root, time zones, iterators, json/v2, reflection, fuzzing, the race detector, pprof, cgo, embed and templates, and secure coding",
+    "Every Go exercise has tests proven to reject common wrong answers, and every lesson has a \"Common mistakes\" note",
+    "New course, early access: Roblox game development in Luau, with a simulated Roblox engine so scripts run right in the app (units 1 and 2: the Luau language, then parts, events, players, leaderstats, timers and tags)",
+    "New course: Logic from beginner to pro, made to be easy to follow — true and false, if/then, sets, arguments and fallacies, proof, and the logic inside a CPU, finishing with a truth-table generator, a tiny SAT solver and a logic-gate simulator",
+    "New course: OSINT (open-source intelligence), taught ethics-first on simulated data only — searching, geolocation, infrastructure and metadata, footprints and verification — with strong lawful-use and consent guidance and a privacy-redaction capstone",
+    "New course: Ethical hacking tools, taught lawfully and defensively — authorisation and the law, reconnaissance, traffic and the web, credentials and hashing, defence (blue team) and reporting — where every exercise runs on bundled simulated data and never touches a real system",
+    "A new \"Security & investigation\" category for the Logic, OSINT and ethical-hacking courses, whose exercises are all verified to reject common wrong answers",
+    "Lesson examples now run with their sample input and files when you press Run in the lesson"
   ]
 }
