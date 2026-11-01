@@ -1,22 +1,19 @@
 {
   "app": "syntax-academy",
-  "version": "1.13.0",
-  "file": "SyntaxAcademy-1.13.0.html",
-  "sha256": "cd894cd222a820f85c600f96b4dbcfa68dcfd7f3851d09c9dae057fef410ff1d",
-  "size": 9193854,
-  "core": "core-1.13.0.py",
-  "core_sha256": "cd1031ff2bdd43e89ebc4ebb1d1d9c206ad4dc46f65f43ba429d7d03222379c7",
+  "version": "1.14.0",
+  "file": "SyntaxAcademy-1.14.0.html",
+  "sha256": "f4c3ddf4236b9e62b30ce707e53c343fade5578f4fbbed7cac925658d634ce0c",
+  "size": 9574483,
+  "core": "core-1.14.0.py",
+  "core_sha256": "c451af30ed09426bf86b3b7d8f6a935d037a30a91ae9f7d4bbf707072c533b71",
   "core_size": 422324,
   "date": "2026-10-31",
   "notes": [
-    "Go rebuilt from beginner to professional for Go 1.27: 19 new lessons and a \"Working like a pro\" unit (modules, project layout, go vet, CI, slog, flags, shipping binaries)",
-    "New Go lessons on files with os.Root, time zones, iterators, json/v2, reflection, fuzzing, the race detector, pprof, cgo, embed and templates, and secure coding",
-    "Every Go exercise has tests proven to reject common wrong answers, and every lesson has a \"Common mistakes\" note",
-    "New course, early access: Roblox game development in Luau, with a simulated Roblox engine so scripts run right in the app (units 1 and 2: the Luau language, then parts, events, players, leaderstats, timers and tags)",
-    "New course: Logic from beginner to pro, made to be easy to follow — true and false, if/then, sets, arguments and fallacies, proof, and the logic inside a CPU, finishing with a truth-table generator, a tiny SAT solver and a logic-gate simulator",
-    "New course: OSINT (open-source intelligence), taught ethics-first on simulated data only — searching, geolocation, infrastructure and metadata, footprints and verification — with strong lawful-use and consent guidance and a privacy-redaction capstone",
-    "New course: Ethical hacking tools, taught lawfully and defensively — authorisation and the law, reconnaissance, traffic and the web, credentials and hashing, defence (blue team) and reporting — where every exercise runs on bundled simulated data and never touches a real system",
-    "A new \"Security & investigation\" category for the Logic, OSINT and ethical-hacking courses, whose exercises are all verified to reject common wrong answers",
-    "Lesson examples now run with their sample input and files when you press Run in the lesson"
+    "Rust rebuilt for edition 2024: every example and exercise now compiles with rustc --edition 2024, including unsafe extern \"C\" blocks and the new rule that each unsafe operation inside an unsafe fn needs its own unsafe block",
+    "17 new Rust lessons that take the course all the way from beginner to professional, across three new units",
+    "New \"Thinking in Rust\" lessons: files, paths and safe I/O (refusing path traversal); time and dates built from scratch with the standard library; and what's new in recent Rust and edition 2024 (let-chains, LazyLock, get_disjoint_mut, extract_if, is_none_or)",
+    "New \"Advanced Rust\" lessons: writing your own async executor to see how futures, polling and wakers really work; calling C with FFI; procedural (derive) macros; parsing untrusted input safely; measuring allocations with a custom global allocator; and serialization the serde way",
+    "New \"Working like a pro\" unit for Rust: Cargo versions and features, workspaces, a tiny clippy, CI annotations, command-line parsing like clap, logging and RUST_LOG, a small HTTP service, and shipping release builds with cargo audit",
+    "Every Rust exercise now has tests proven to reject common wrong answers, and every lesson has a \"Common mistakes\" note"
   ]
 }
