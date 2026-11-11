@@ -1,19 +1,19 @@
 {
   "app": "syntax-academy",
-  "version": "1.15.0",
-  "file": "SyntaxAcademy-1.15.0.html",
-  "sha256": "9cb0f0ff71f1b6b0ee4b66c98d2f8b7f320df21968e7b84cc8d0bcf5b8b58aca",
-  "size": 9859628,
-  "core": "core-1.15.0.py",
-  "core_sha256": "0d4a068e7dd751b89ce697c82a437519d0110c7e085586db4b49a4d17a14c092",
-  "core_size": 422678,
+  "version": "1.16.0",
+  "file": "SyntaxAcademy-1.16.0.html",
+  "sha256": "0ef4f4c00c188aaafd1f9e1836fbc7834af726dfda626d0052b1ab019a870233",
+  "size": 10236856,
+  "core": "core-1.16.0.py",
+  "core_sha256": "698e82d290330f1fa3b97dc918e20fd3d32d79d720ccc20044cbad4d3a272f09",
+  "core_size": 423926,
   "date": "2026-11-11",
   "notes": [
-    "The Roblox course is complete: six units from your first Luau script to shipping a real game, plus a final exam and a Roblox game developer certification",
-    "New \"Game systems\" unit: client and server, RemoteEvents, never trusting the client, data stores, tweens, object-oriented Luau, types, user interfaces and tools",
-    "New \"Game-development techniques\" unit: ray casting, spatial queries, state machines and NPC AI, pathfinding, procedural generation, game loops, cleanup, networking and inventories",
-    "New \"Shipping games\" unit: Rojo, testing, monetisation done right, data migrations, live operations, performance, publishing, and how Roblox compares to other engines",
-    "Four capstone games built from everything in the course: an obby with checkpoints, a tycoon with upgrades, a round-based arena, and a tower defence with waves and targeting",
-    "Every Roblox exercise runs in the built-in simulated Roblox engine, with tests proven to reject common wrong answers"
+    "New Blender course: 45 lessons in seven units, from your first Python script in Blender to a finished game-asset pipeline, plus checkpoints, a final exam and a Blender 3D and pipeline certification",
+    "Your code runs in real Blender (5.2 LTS) in the background, so every scene you build, render and export is checked against what Blender actually produces",
+    "Units on modelling (bmesh, modifiers, UV unwrapping), materials and node shaders, lighting and rendering, keyframe animation, and procedural tools like Geometry Nodes, seeded generation and fast NumPy mesh edits",
+    "A game-asset pipeline unit: poly budgets and LODs, texture baking, exporting to game engines, batch jobs from the command line, asset libraries and automated quality checks",
+    "Four capstone projects that pull the whole course together",
+    "Blender joins the Games and Scripting categories; the app offers to install it if it's missing"
   ]
 }
