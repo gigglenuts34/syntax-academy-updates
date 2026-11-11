@@ -1,19 +1,19 @@
 {
   "app": "syntax-academy",
-  "version": "1.14.0",
-  "file": "SyntaxAcademy-1.14.0.html",
-  "sha256": "f4c3ddf4236b9e62b30ce707e53c343fade5578f4fbbed7cac925658d634ce0c",
-  "size": 9574483,
-  "core": "core-1.14.0.py",
-  "core_sha256": "c451af30ed09426bf86b3b7d8f6a935d037a30a91ae9f7d4bbf707072c533b71",
-  "core_size": 422324,
-  "date": "2026-10-31",
+  "version": "1.15.0",
+  "file": "SyntaxAcademy-1.15.0.html",
+  "sha256": "9cb0f0ff71f1b6b0ee4b66c98d2f8b7f320df21968e7b84cc8d0bcf5b8b58aca",
+  "size": 9859628,
+  "core": "core-1.15.0.py",
+  "core_sha256": "0d4a068e7dd751b89ce697c82a437519d0110c7e085586db4b49a4d17a14c092",
+  "core_size": 422678,
+  "date": "2026-11-11",
   "notes": [
-    "Rust rebuilt for edition 2024: every example and exercise now compiles with rustc --edition 2024, including unsafe extern \"C\" blocks and the new rule that each unsafe operation inside an unsafe fn needs its own unsafe block",
-    "17 new Rust lessons that take the course all the way from beginner to professional, across three new units",
-    "New \"Thinking in Rust\" lessons: files, paths and safe I/O (refusing path traversal); time and dates built from scratch with the standard library; and what's new in recent Rust and edition 2024 (let-chains, LazyLock, get_disjoint_mut, extract_if, is_none_or)",
-    "New \"Advanced Rust\" lessons: writing your own async executor to see how futures, polling and wakers really work; calling C with FFI; procedural (derive) macros; parsing untrusted input safely; measuring allocations with a custom global allocator; and serialization the serde way",
-    "New \"Working like a pro\" unit for Rust: Cargo versions and features, workspaces, a tiny clippy, CI annotations, command-line parsing like clap, logging and RUST_LOG, a small HTTP service, and shipping release builds with cargo audit",
-    "Every Rust exercise now has tests proven to reject common wrong answers, and every lesson has a \"Common mistakes\" note"
+    "The Roblox course is complete: six units from your first Luau script to shipping a real game, plus a final exam and a Roblox game developer certification",
+    "New \"Game systems\" unit: client and server, RemoteEvents, never trusting the client, data stores, tweens, object-oriented Luau, types, user interfaces and tools",
+    "New \"Game-development techniques\" unit: ray casting, spatial queries, state machines and NPC AI, pathfinding, procedural generation, game loops, cleanup, networking and inventories",
+    "New \"Shipping games\" unit: Rojo, testing, monetisation done right, data migrations, live operations, performance, publishing, and how Roblox compares to other engines",
+    "Four capstone games built from everything in the course: an obby with checkpoints, a tycoon with upgrades, a round-based arena, and a tower defence with waves and targeting",
+    "Every Roblox exercise runs in the built-in simulated Roblox engine, with tests proven to reject common wrong answers"
   ]
 }
