@@ -165,7 +165,7 @@ LANGS = {
     "arduino": {"file": "sketch.ino", "build": ["g++", "-std=gnu++17", "-O1", "-Wall", "-fdiagnostics-color=never", "-I.", "-include", "Arduino.h", "-x", "c++", "-o", "main", "sketch.ino"], "run": ["./main"], "need": "g++", "pkgs": ["gcc"], "ver": ["g++", "--version"]},
     # The Electronics course: the same simulator, built as an Arduino Mega 2560 (pins, PWM and interrupts of a Mega).
     "electronics": {"file": "sketch.ino", "build": ["g++", "-std=gnu++17", "-O1", "-Wall", "-fdiagnostics-color=never", "-DSA_MEGA", "-fsingle-precision-constant", "-I.", "-include", "Arduino.h", "-x", "c++", "-o", "main", "sketch.ino"], "run": ["./main"], "need": "g++", "pkgs": ["gcc"], "ver": ["g++", "--version"]},
-    "cpp": {"file": "main.cpp", "build": ["g++", "-std=c++20", "-O1", "-Wall", "-fdiagnostics-color=never", "-o", "main", "main.cpp"], "run": ["./main"], "need": "g++", "pkgs": ["gcc"], "ver": ["g++", "--version"]},
+    "cpp": {"file": "main.cpp", "build": ["g++", "-std=c++23", "-O1", "-Wall", "-fdiagnostics-color=never", "-o", "main", "main.cpp"], "run": ["./main"], "need": "g++", "pkgs": ["gcc"], "ver": ["g++", "--version"]},
     "csharp": {"file": "main.cs", "run": ["dotnet", "run", "main.cs"], "need": "dotnet", "pkgs": ["dotnet-sdk"], "slow": True,
                "env": {"DOTNET_CLI_HOME": "{cache}", "NUGET_PACKAGES": "{cache}/nuget", "DOTNET_NOLOGO": "1", "DOTNET_CLI_TELEMETRY_OPTOUT": "1", "DOTNET_SKIP_FIRST_TIME_EXPERIENCE": "1"}, "ver": ["dotnet", "--version"],
                "net_until": "nuget/microsoft.dotnet.ilcompiler"},
@@ -179,6 +179,10 @@ LANGS = {
     # Roblox Studio has no Linux version: lessons run in a simulated Roblox engine written in Luau (ROBLOX_SIM).
     # The scripted world input (stdin) reaches the engine as its argument, because the luau CLI has no io library.
     "roblox": {"file": "sim.luau", "run": ["sh", "-c", 'exec luau sim.luau -a "$(cat)"'], "need": "luau", "pkgs": ["luau"], "ver": ["pacman", "-Q", "luau"]},
+    # Blender runs headless (no window, no GPU): BLENDER_RUN runs the learner's main.py inside it and exits
+    # straight after, so Blender's own shutdown messages never reach the output. Renders use Cycles on the CPU.
+    "blender": {"file": "main.py", "run": ["blender", "-b", "--quiet", "--factory-startup", "-noaudio", "--python-exit-code", "1", "--python", "sa_run.py"], "need": "blender", "pkgs": ["blender"],
+                "ver": ["blender", "--version"], "slow": True, "env": {"ALSOFT_DRIVERS": "null"}},
     "lua": {"file": "main.lua", "run": ["lua", "main.lua"], "need": "lua", "pkgs": ["lua"], "ver": ["lua", "-v"]},
     "perl": {"file": "main.pl", "run": ["perl", "main.pl"], "need": "perl", "pkgs": ["perl"], "ver": ["perl", "-e", "print \"Perl $^V\""]},
     "bash": {"file": "main.sh", "run": ["bash", "main.sh"], "need": "bash", "pkgs": ["bash"], "ver": ["bash", "--version"]},
@@ -363,6 +367,27 @@ def _avr_types(code):
 
 # A plain AVR C program (no setup()/loop()) has its own main(): the simulator then starts the board before it.
 BAREMETAL = re.compile(r"^\s*int\s+main\s*\(", re.M)
+
+
+BLENDER_RUN = r'''import os, sys, runpy, traceback
+sys.argv = ["main.py"]
+code = 0
+try:
+    runpy.run_path("main.py", run_name="__main__")
+except SystemExit as e:
+    code = e.code if isinstance(e.code, int) else (0 if e.code is None else 1)
+except BaseException as e:
+    tb = e.__traceback__
+    while tb and not tb.tb_frame.f_code.co_filename.endswith("main.py"):
+        tb = tb.tb_next
+    if isinstance(e, SyntaxError):  # the file never ran: just show where the mistake is
+        tb = None
+    traceback.print_exception(type(e), e, tb)
+    code = 1
+sys.stdout.flush()
+sys.stderr.flush()
+os._exit(code)
+'''
 
 
 def _tidy_roblox(res):
@@ -637,6 +662,9 @@ def run_code(msg):
                 code = _avr_types(code)
                 # Library files (.cpp) next to the sketch are compiled with it, as one unit.
                 code += "".join('\n#include "%s"' % n for n in sorted(files) if n.endswith(".cpp") and _safe_name(n))
+        if lang == "blender":
+            files.pop("sa_run.py", None)
+            files["sa_run.py"] = BLENDER_RUN
         if lang == "roblox":
             files = {"sources.luau": roblox_sources(code, files)}
             code = roblox_program()

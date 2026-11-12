@@ -1,19 +1,18 @@
 {
   "app": "syntax-academy",
-  "version": "1.16.0",
-  "file": "SyntaxAcademy-1.16.0.html",
-  "sha256": "0ef4f4c00c188aaafd1f9e1836fbc7834af726dfda626d0052b1ab019a870233",
-  "size": 10236856,
-  "core": "core-1.16.0.py",
-  "core_sha256": "698e82d290330f1fa3b97dc918e20fd3d32d79d720ccc20044cbad4d3a272f09",
+  "version": "1.17.0",
+  "file": "SyntaxAcademy-1.17.0.html",
+  "sha256": "3c454765a1de24c16193d03cfa8f1dba2fbcc5ba4b222f6e7a40de6f0073b1ef",
+  "size": 10677359,
+  "core": "core-1.17.0.py",
+  "core_sha256": "524b5004ff4685564adb0ba55ba65ab6ee0ac83621cde7cc57b2502fc80943b9",
   "core_size": 423926,
   "date": "2026-11-11",
   "notes": [
-    "New Blender course: 45 lessons in seven units, from your first Python script in Blender to a finished game-asset pipeline, plus checkpoints, a final exam and a Blender 3D and pipeline certification",
-    "Your code runs in real Blender (5.2 LTS) in the background, so every scene you build, render and export is checked against what Blender actually produces",
-    "Units on modelling (bmesh, modifiers, UV unwrapping), materials and node shaders, lighting and rendering, keyframe animation, and procedural tools like Geometry Nodes, seeded generation and fast NumPy mesh edits",
-    "A game-asset pipeline unit: poly budgets and LODs, texture baking, exporting to game engines, batch jobs from the command line, asset libraries and automated quality checks",
-    "Four capstone projects that pull the whole course together",
-    "Blender joins the Games and Scripting categories; the app offers to install it if it's missing"
+    "C++ is now a full beginner-to-pro course: 84 lessons (was 66), targeting C++23 with GCC 16.",
+    "New deep-dive lessons: files and std::filesystem, std::expected and dates with chrono, and modern C++ (std::print, modules).",
+    "New advanced lessons: coroutines and std::generator, deadlocks and lock ordering, wrapping a C library, secure parsing with sanitizers, custom allocators, and variadic templates.",
+    "A new \"Working like a pro\" unit: CMake targets, linking and the ODR, vcpkg and Conan, headers and project layout, clang-tidy and clang-format, CI, command-line tools, and shipping with semver and ABI stability.",
+    "Every C++ exercise has wrong answers its tests reject, every lesson a Common mistakes note, and the capstones milestones."
   ]
 }
