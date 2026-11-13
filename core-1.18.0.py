@@ -161,11 +161,11 @@ LANGS = {
     "java": {"file": "Main.java", "run": ["java", "--enable-native-access=ALL-UNNAMED", "-Xss8m", "-XX:+UseSerialGC", "-XX:TieredStopAtLevel=1", "-Xshare:auto", "Main.java"], "need": "java", "pkgs": ["jdk-openjdk"], "ver": ["java", "--version"]},
     "kotlin": {"file": "main.kt", "build": ["kotlinc", "-nowarn", "main.kt", "-include-runtime", "-d", "main.jar"], "run": ["java", "-Xss8m", "-XX:+UseSerialGC", "-jar", "main.jar"],
                "need": "kotlinc", "pkgs": ["kotlin", "jdk-openjdk"], "ver": ["kotlinc", "-version"], "slow": True},
-    "c": {"file": "main.c", "build": ["gcc", "-std=c17", "-O1", "-Wall", "-fdiagnostics-color=never", "-o", "main", "main.c", "-lm"], "run": ["./main"], "need": "gcc", "pkgs": ["gcc"], "ver": ["gcc", "--version"]},
+    "c": {"file": "main.c", "build": ["gcc", "-std=c23", "-O1", "-Wall", "-fdiagnostics-color=never", "-o", "main", "main.c", "-lm"], "run": ["./main"], "need": "gcc", "pkgs": ["gcc"], "ver": ["gcc", "--version"]},
     "arduino": {"file": "sketch.ino", "build": ["g++", "-std=gnu++17", "-O1", "-Wall", "-fdiagnostics-color=never", "-I.", "-include", "Arduino.h", "-x", "c++", "-o", "main", "sketch.ino"], "run": ["./main"], "need": "g++", "pkgs": ["gcc"], "ver": ["g++", "--version"]},
     # The Electronics course: the same simulator, built as an Arduino Mega 2560 (pins, PWM and interrupts of a Mega).
     "electronics": {"file": "sketch.ino", "build": ["g++", "-std=gnu++17", "-O1", "-Wall", "-fdiagnostics-color=never", "-DSA_MEGA", "-fsingle-precision-constant", "-I.", "-include", "Arduino.h", "-x", "c++", "-o", "main", "sketch.ino"], "run": ["./main"], "need": "g++", "pkgs": ["gcc"], "ver": ["g++", "--version"]},
-    "cpp": {"file": "main.cpp", "build": ["g++", "-std=c++20", "-O1", "-Wall", "-fdiagnostics-color=never", "-o", "main", "main.cpp"], "run": ["./main"], "need": "g++", "pkgs": ["gcc"], "ver": ["g++", "--version"]},
+    "cpp": {"file": "main.cpp", "build": ["g++", "-std=c++23", "-O1", "-Wall", "-fdiagnostics-color=never", "-o", "main", "main.cpp"], "run": ["./main"], "need": "g++", "pkgs": ["gcc"], "ver": ["g++", "--version"]},
     "csharp": {"file": "main.cs", "run": ["dotnet", "run", "main.cs"], "need": "dotnet", "pkgs": ["dotnet-sdk"], "slow": True,
                "env": {"DOTNET_CLI_HOME": "{cache}", "NUGET_PACKAGES": "{cache}/nuget", "DOTNET_NOLOGO": "1", "DOTNET_CLI_TELEMETRY_OPTOUT": "1", "DOTNET_SKIP_FIRST_TIME_EXPERIENCE": "1"}, "ver": ["dotnet", "--version"],
                "net_until": "nuget/microsoft.dotnet.ilcompiler"},

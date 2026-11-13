@@ -1,18 +1,18 @@
 {
   "app": "syntax-academy",
-  "version": "1.17.0",
-  "file": "SyntaxAcademy-1.17.0.html",
-  "sha256": "3c454765a1de24c16193d03cfa8f1dba2fbcc5ba4b222f6e7a40de6f0073b1ef",
-  "size": 10677359,
-  "core": "core-1.17.0.py",
-  "core_sha256": "524b5004ff4685564adb0ba55ba65ab6ee0ac83621cde7cc57b2502fc80943b9",
+  "version": "1.18.0",
+  "file": "SyntaxAcademy-1.18.0.html",
+  "sha256": "14c1566b4ab1d82f7aa79cd9f34adf7536d4680dd227173048b0b15bf76ab89d",
+  "size": 11028496,
+  "core": "core-1.18.0.py",
+  "core_sha256": "590a1ae811e499bc7e6d879624da84d2c2a69512ca8ee0aab723d2ef8537bdcd",
   "core_size": 423926,
-  "date": "2026-11-11",
+  "date": "2026-11-13",
   "notes": [
-    "C++ is now a full beginner-to-pro course: 84 lessons (was 66), targeting C++23 with GCC 16.",
-    "New deep-dive lessons: files and std::filesystem, std::expected and dates with chrono, and modern C++ (std::print, modules).",
-    "New advanced lessons: coroutines and std::generator, deadlocks and lock ordering, wrapping a C library, secure parsing with sanitizers, custom allocators, and variadic templates.",
-    "A new \"Working like a pro\" unit: CMake targets, linking and the ODR, vcpkg and Conan, headers and project layout, clang-tidy and clang-format, CI, command-line tools, and shipping with semver and ABI stability.",
-    "Every C++ exercise has wrong answers its tests reject, every lesson a Common mistakes note, and the capstones milestones."
+    "The C course now goes from beginner to professional: 82 lessons, targeting C23 with GCC 16.",
+    "New deep dives: C23 features, dates and times, and bounded strings done right.",
+    "New advanced lessons: a mini shell with pipes, signals, sockets, sanitizers and Valgrind hands on, secure coding, and the ABI and calling C from other languages.",
+    "New \"Working like a pro\" unit: make, modules and opaque types, static analysis, CI matrices, getopt_long tools, and shipping shared libraries.",
+    "Every C exercise now has wrong answers its tests reject, every lesson a Common mistakes note, and the capstones milestones."
   ]
 }
